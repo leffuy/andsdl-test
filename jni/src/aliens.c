@@ -547,7 +547,7 @@ main(int argc, char *argv[])
 	}
 
 	/* Open the display device */
-	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 0, SDL_SWSURFACE|SDL_FULLSCREEN);
+	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 0, SDL_SWSURFACE|SDL_FULLSCREEN|SDL_OPENGL);
 	if ( screen == NULL ) {
 		fprintf(stderr, "Couldn't set %dx%d video mode: %s\n",
 				SCREEN_WIDTH, SCREEN_HEIGHT, SDL_GetError());
