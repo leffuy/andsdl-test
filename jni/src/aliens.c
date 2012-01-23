@@ -30,7 +30,8 @@
 #include "SDL_mixer.h"
 #include "SDL_image.h"
 
-#ifdef __ANDROID__ #define DIR_SEP	"/"
+#ifdef __ANDROID__
+#define DIR_SEP	"/"
 #define DIR_CUR "/sdcard/"
 #else
 #ifdef macintosh
@@ -552,7 +553,9 @@ main(int argc, char *argv[])
 				SCREEN_WIDTH, SCREEN_HEIGHT, SDL_GetError());
 		exit(2);
 	}
+
 	SDL_Delay(6000);
+
 	/* Initialize the random number generator */
 	srand(time(NULL));
 
