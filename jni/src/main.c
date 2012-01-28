@@ -44,8 +44,8 @@
 #endif
 #endif
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 600
+#define HEIGHT 1024
 #define BPP 4
 #define DEPTH 32
 
