@@ -256,6 +256,7 @@ int main(int argc, char* argv[])
 	    }
 	    break;
 	  case SDL_WINDOWEVENT:
+            SDL_Log("Window event received.");
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
               SDL_Log("Window resize event initiated.");
               if (!(screen = initScreen(WIDTH,HEIGHT)))
