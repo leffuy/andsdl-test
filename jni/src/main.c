@@ -195,7 +195,7 @@ SDL_Surface* initScreen(int width,int height)
   if (!window) {
     window = SDL_CreateWindow("Gesture Test",
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);
+                              WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
   }
   if (!window) {
     return NULL;
@@ -259,7 +259,7 @@ int main(int argc, char* argv[])
             SDL_Log("Window event received: %i.", event.window.event);
             if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
               SDL_Log("Window resize event initiated.");
-              if (!(screen = initScreen(WIDTH,HEIGHT)))
+              if (!(screen = initScreen(0,0)))
               {
                 SDL_Log("Window resize failed.");
                 SDL_Quit();
