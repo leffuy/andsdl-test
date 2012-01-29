@@ -44,8 +44,8 @@
 #endif
 #endif
 
-#define WIDTH 1024
-#define HEIGHT 600
+#define WIDTH 640
+#define HEIGHT 480
 #define BPP 4
 #define DEPTH 32
 
@@ -256,6 +256,20 @@ int main(int argc, char* argv[])
 	    }
 	    break;
 	  case SDL_WINDOWEVENT:
+            if (event.window.event == SDL_WINDOWEVENT_HIDDEN ||
+                event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
+			
+		}
+            if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED ||
+		event.window.event == SDL_WINDOWEVENT_RESTORED){
+		  if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
+  
+		  if (!(screen = initScreen(WIDTH,HEIGHT)))
+		    {
+		      SDL_Quit();
+		      return 1;
+		    }
+	    }
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
 	      if (!(screen = initScreen(0, 0)))
 	      {
