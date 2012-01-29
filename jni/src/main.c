@@ -259,7 +259,7 @@ int main(int argc, char* argv[])
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
 	      if (!(screen = initScreen(0, 0)))
 	      {
-            SDL_Log("Window resize failed.")
+            SDL_Log("Window resize failed.");
             SDL_Quit();
             return 1;
 	      }
