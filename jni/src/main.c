@@ -256,10 +256,10 @@ int main(int argc, char* argv[])
 	    }
 	    break;
 	  case SDL_WINDOWEVENT:
-		SDL_Log("%d", event.window.event);
+		SDL_Log("%i", event.window.event);
             if (event.window.event == SDL_WINDOWEVENT_HIDDEN ||
                 event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
-			
+		SDL_Log("%i", event.window.event);
 		}
             if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED ||
 		event.window.event == SDL_WINDOWEVENT_RESTORED){
