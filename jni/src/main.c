@@ -228,6 +228,8 @@ int main(int argc, char* argv[])
 	//Record _all_ events
 	events[eventWrite & (EVENT_BUF_SIZE-1)] = event;
 	eventWrite++;
+
+    SDL_Log("Window event received: %i.", event.type);
 	
 	switch (event.type) 
 	  {
