@@ -259,14 +259,12 @@ int main(int argc, char* argv[])
             SDL_Log("Window event received: %i.", event.window.event);
             if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
               SDL_Log("Window resize event initiated.");
-              /*
               if (!(screen = initScreen(0,0)))
               {
                 SDL_Log("Window resize failed.");
                 SDL_Quit();
                 return 1;
               }
-              */
             }
 	    break;
 	  case SDL_FINGERMOTION:
