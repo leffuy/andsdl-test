@@ -261,16 +261,11 @@ int main(int argc, char* argv[])
             if (event.window.event == SDL_WINDOWEVENT_HIDDEN ||
                 event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
 		SDL_Log("focus or loss %i", event.window.event);
+		SDL_MinimizeWindow(window);
 		}
             if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED ||
 		event.window.event == SDL_WINDOWEVENT_RESTORED){
-		  if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
-  
-		  if (!(screen = initScreen(WIDTH,HEIGHT)))
-		    {
-		      SDL_Quit();
-		      return 1;
-		    }
+		SDL_RestoreWindow(window);
 	    }
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
 	      if (!(screen = initScreen(0, 0)))
