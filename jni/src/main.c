@@ -53,7 +53,7 @@
 #define EVENT_BUF_SIZE 256
 
 
-#define VERBOSE 0
+#define VERBOSE 1
 
 static SDL_Window *window;
 static SDL_Event events[EVENT_BUF_SIZE];
