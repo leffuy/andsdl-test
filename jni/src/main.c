@@ -268,8 +268,9 @@ int main(int argc, char* argv[])
 		SDL_RestoreWindow(window);
 	    }
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-	      if (!(screen = initScreen(0, 0)))
+	      if (!(screen = initScreen(WIDTH,HEIGHT)))
 	      {
+	      	SDL_Log("Called SDL_Quit");
 		SDL_Quit();
 		return 1;
 	      }
@@ -323,6 +324,7 @@ int main(int argc, char* argv[])
       }
     DrawScreen(screen);
   }  
+  SDL_Log("Called SDL_Quit");
   SDL_Quit();  
   return 0;
 }
