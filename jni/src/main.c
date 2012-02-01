@@ -195,7 +195,7 @@ SDL_Surface* initScreen(int width,int height)
   if (!window) {
     window = SDL_CreateWindow("Gesture Test",
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);
+                              WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
   }
   if (!window) {
     return NULL;
@@ -228,6 +228,8 @@ int main(int argc, char* argv[])
 	//Record _all_ events
 	events[eventWrite & (EVENT_BUF_SIZE-1)] = event;
 	eventWrite++;
+
+    SDL_Log("Window event received: %i.", event.type);
 	
 	switch (event.type) 
 	  {
@@ -256,6 +258,7 @@ int main(int argc, char* argv[])
 	    }
 	    break;
 	  case SDL_WINDOWEVENT:
+<<<<<<< HEAD
                 //needs conversion
 		SDL_Log("Event ID: %i", event.window.event);
             if (event.window.event == SDL_WINDOWEVENT_HIDDEN ||
