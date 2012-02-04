@@ -258,7 +258,6 @@ int main(int argc, char* argv[])
 	    }
 	    break;
 	  case SDL_WINDOWEVENT:
-<<<<<<< HEAD
                 //needs conversion
 		SDL_Log("Event ID: %i", event.window.event);
             if (event.window.event == SDL_WINDOWEVENT_HIDDEN ||
