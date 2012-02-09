@@ -14,16 +14,18 @@
 */
 
 //includes
+#include <malloc.h> //my favorite of all memory allocators, never lets me down
 #include <stdio.h> //for NULL. I mean seriously...
 #include "SDL.h"
 
 //defines
 
+
 //platform structures
-//Having 
 
 //expandable configurator
 struct ConfigSys{
+    char* windowName; //Name the window mang
     int width,height; //I can do this right?
     
 }; //This goes into a configuration function
@@ -39,29 +41,47 @@ struct Renderer{
     SDL_Surface* screen;
 };
 
-
-//TandumEvent Interface
-struct IEvent{
+//Event-Controller interface
+struct EventController{
     unsigned int event_code;
-};
-
-//Controller interface
-struct IController{
     int (*FunctionPtr)(); //it's like a reverse constructor, forced no params
 };
 
+//Basic struct for event queue
+struct EventQueue{
+    struct EventController* event;
+};
 //Controller list
+
+//Event code 1
 
 //platform functions
 //Small set of functions that manipulates the system (start, stop, etc.)
 
 //Init's screen and window stuff
-void InitConfig(struct ConfigSys *conf){
-//this will need a returnable object 
+struct SysObjs* InitConfig(struct ConfigSys *conf){
+    SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+//TODO this will need a returnable object
+   // 
+    //do something with these 
+    struct SysObjs* tmpsysobj = (struct SysObjs*)malloc(sizeof(struct SysObjs));
+    (*tmpsysobj).renderer = (struct Renderer*)malloc(sizeof(struct Renderer));
+
+    return tmpsysobj;
+}
+
+//these three guys manage the event loop
+void StartSystem(){
 
 }
 
+void StopSystem(){
 
+}
+
+void QuitSystem(){
+
+}
 //SANDBOX AREA below
 
 //test "user code" area
