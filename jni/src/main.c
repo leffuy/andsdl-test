@@ -56,10 +56,12 @@ struct EventQueue{
 //Event code 1
 
 //platform functions
+
 //Small set of functions that manipulates the system (start, stop, etc.)
 
 //Init's screen and window stuff
 struct SysObjs* InitConfig(struct ConfigSys *conf){
+    if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return NULL;
     SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 //TODO this will need a returnable object
    // 
@@ -67,40 +69,72 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     struct SysObjs* tmpsysobj = (struct SysObjs*)malloc(sizeof(struct SysObjs));
     (*tmpsysobj).renderer = (struct Renderer*)malloc(sizeof(struct Renderer));
 
+    (*(*tmpsysobj).renderer).window = window;
+    (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
+
     return tmpsysobj;
 }
 
-//these three guys manage the event loop
-void StartSystem(){
+//System Variable Structs
+//Contains Renderer and Input mechanisms
+struct ConfigSys system_configs;
+struct SysObjs system_objects;
 
+//I have a feeling at some point this will put in an interface 
+//with a create_scheme
+
+//these three guys manage the event loop
+void InitSystem(){
+    system_objects = InitConfig(&system_configs); //this is simple for now
+}
+
+
+void StartSystem(){
+    if(!(system_objects.renderer))
+        return; //kind of like throwing an exception?
+
+    if(!(*(system_objects.renderer)).screen)
+        (*(system_objects.renderer)).screen = SDL_GetWindowSurface(system_objects.()); //get a new handle to the screen if lost somehow
+
+    for(;;){
+        
+    }
 }
 
 void StopSystem(){
-
+//save state of the buffer to somewhere!
 }
 
 void QuitSystem(){
 
 }
+
+
+
+//here some kind of rampant loader to load the fields 
+//do some tests first
+
 //SANDBOX AREA below
 
 //test "user code" area
 void userFunction1(){ //I really like this name
+//I guess I'll use this to define my system_configs
+//And as an example of a "loader"
 
+//here in this huge block of code a loader would do something
+//I see evolution this way, hardcode -> macros -> JSON C objs
+system_configs.windowName = "Figurine";
+system_configs.height = 640;
+system_configs.width = 480;
 }
 
 //entry point for application start
 int main(int argc, char* argv[])
 {
-    //I suppose everything else is implicitly initialized 
-    //also this shit should really go elsewhere eventually
-    if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
+    
 
-    //The Loop
-    while(1){
-
-    }
-
-    //Blah blah blah some clean up
+    //Wow with the way we set it up main is very simple
     return 0;
 }
+
+
