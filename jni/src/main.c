@@ -51,11 +51,15 @@ struct EventController{
     struct EventController* next;
 };
 
+enum EventCodes {
+    TAND_INIT,
+    TAND_QUIT
+}; //Basic event codes for case in event creation
+
 //Basic struct for event queue <- nixed cause I don't want to dereference that
 
 //Controller list
 //Event code 1, 2, 3...etc
-
 
 
 //System-wide Variable Structs
@@ -87,6 +91,40 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     return tmpsysobj;
 }
 
+//these guys handle event creation/resolution
+
+//Note to Patrick:
+//Please fucking change this if you feel that it needs to be, don't even 
+//hesitate. I don't like over using if statements and a switch() is just that
+
+struct EventController* CreateEvent(enum EventCodes eventcode){
+    struct EventController* eventControl = (struct EventController*)malloc(sizeof(struct EventController));
+    
+    (eventControl*).event_code = eventcode;
+
+    switch(eventcode)
+    {
+        case TAND_INIT:
+          //I imagine a specific controller function ptr is set here
+        break;
+
+        case TAND_QUIT:
+          //For each scenario and shit
+        break;
+
+        default:
+            return NULL;
+    }
+    return eventControl;
+}
+
+void ResolveEvent(struct EventController* resolver){
+    if(!(*resolver).Controller){
+        free(resolver);
+        return; //I'm a big fan of returning early during checks
+    }
+    (*resolver).Controller(); // Simple enough
+}
 
 //these guys manage the event queue
 struct EventController* InputPopQueue(){
@@ -138,6 +176,8 @@ void StartSystem(){
 //Throws an event to back up 
 void StopSystem(){
 //save state of the buffer to somewhere!
+
+//need more of the system implemented before I can fill out this stub
 }
 
 void QuitSystem(){
@@ -162,6 +202,7 @@ system_configs.windowName = "Figurine";
 system_configs.height = 640;
 system_configs.width = 480;
 }
+//Well the above shit works for sure
 
 //entry point for application start
 int main(int argc, char* argv[])
