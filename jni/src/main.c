@@ -17,6 +17,7 @@
 #include <malloc.h> //my favorite of all memory allocators, never lets me down
 #include <stdio.h> //for NULL. I mean seriously...
 #include "SDL.h"
+#include "SDL_image.h"
 
 //defines
 
@@ -39,32 +40,43 @@ struct SysObjs{
 struct Renderer{
     SDL_Window* window;
     SDL_Surface* screen;
+    int (*RenderFunc)();
 };
 
 //Event-Controller interface
 struct EventController{
     unsigned int event_code;
-    int (*FunctionPtr)(); //it's like a reverse constructor, forced no params
+    unsigned char resolved; //this needs to be a bit...
+    int (*Controller)(); //it's like a reverse constructor, forced no params
+    struct EventController* next;
 };
 
-//Basic struct for event queue
-struct EventQueue{
-    struct EventController* event;
-};
+//Basic struct for event queue <- nixed cause I don't want to dereference that
+
 //Controller list
+//Event code 1, 2, 3...etc
 
-//Event code 1
 
-//platform functions
 
-//Small set of functions that manipulates the system (start, stop, etc.)
+//System-wide Variable Structs
+//Contains Renderer and Input mechanisms, etc.
+struct ConfigSys system_configs; //maybe these will be pointers one day...
+struct SysObjs* system_objects;
+struct EventController* headController;
+struct EventController* tailController;
+
+//platform functions declares
+struct SysObjs* InitConfig(struct ConfigSys *conf);
+void InitSystem();
+void StartSystem();
+void StopSystem();
+void QuitSystem();
+
 
 //Init's screen and window stuff
 struct SysObjs* InitConfig(struct ConfigSys *conf){
     if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return NULL;
     SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
-//TODO this will need a returnable object
-   // 
     //do something with these 
     struct SysObjs* tmpsysobj = (struct SysObjs*)malloc(sizeof(struct SysObjs));
     (*tmpsysobj).renderer = (struct Renderer*)malloc(sizeof(struct Renderer));
@@ -75,10 +87,28 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     return tmpsysobj;
 }
 
-//System Variable Structs
-//Contains Renderer and Input mechanisms
-struct ConfigSys system_configs;
-struct SysObjs system_objects;
+
+//these guys manage the event queue
+struct EventController* InputPopQueue(){
+    if(!headController)
+        return NULL;
+
+    return headController;
+
+    if((*headController).next){
+       headController = (*headController).next;
+    }
+
+}
+
+void InputPushQueue(struct EventController* pushed){
+    if(!headController){
+        headController = pushed;
+        tailController = pushed;
+        return;
+    }
+    (*tailController).next = pushed;
+}
 
 //I have a feeling at some point this will put in an interface 
 //with a create_scheme
@@ -86,21 +116,26 @@ struct SysObjs system_objects;
 //these three guys manage the event loop
 void InitSystem(){
     system_objects = InitConfig(&system_configs); //this is simple for now
+    //setup system event queue here...
+    
 }
 
 
 void StartSystem(){
-    if(!(system_objects.renderer))
+    if(!(*system_objects).renderer)
         return; //kind of like throwing an exception?
 
-    if(!(*(system_objects.renderer)).screen)
-        (*(system_objects.renderer)).screen = SDL_GetWindowSurface(system_objects.()); //get a new handle to the screen if lost somehow
-
+    if((*(*system_objects).renderer).screen != NULL){
+        (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
+}
+//Root loop things can be scheduled around this
     for(;;){
-        
+        struct EventController* tmpEvent = InputPopQueue();
+	
     }
 }
 
+//Throws an event to back up 
 void StopSystem(){
 //save state of the buffer to somewhere!
 }
@@ -131,10 +166,17 @@ system_configs.width = 480;
 //entry point for application start
 int main(int argc, char* argv[])
 {
-    
+    userFunction1();
+    InitSystem();
+//Here we should load game related stuff;
+//This is what I imagine:
+    //LoadCosmos("userDataFile"); //loads the world file
+    StartSystem();
 
     //Wow with the way we set it up main is very simple
     return 0;
 }
 
 
+//One day I will remove all the comments. This shit is stupid.
+//I feel like this will annoy a good programmer rather than help.
