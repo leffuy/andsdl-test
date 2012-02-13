@@ -40,6 +40,7 @@ struct SysObjs{
 struct Renderer{
     SDL_Window* window;
     SDL_Surface* screen;
+    Uint32 alpha_color;
     int (*RenderFunc)();
 };
 
@@ -62,6 +63,12 @@ enum EventCodes {
 //Event code 1, 2, 3...etc
 
 
+//Here goes the model stuff
+
+
+//here goes render stuff
+
+
 //System-wide Variable Structs
 //Contains Renderer and Input mechanisms, etc.
 struct ConfigSys system_configs; //maybe these will be pointers one day...
@@ -75,7 +82,12 @@ void InitSystem();
 void StartSystem();
 void StopSystem();
 void QuitSystem();
-
+struct EventController* CreateEvent(enum EventCodes eventcode);
+void ResolveEvent(struct EventController* resolver);
+struct EventController* InputPopQueue();
+void InputPushQueue(struct EventController* pushed);
+SDL_Surface* LoadImageToSurface(char* imgname);
+void RenderScreen();
 
 //Init's screen and window stuff
 struct SysObjs* InitConfig(struct ConfigSys *conf){
@@ -88,7 +100,39 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     (*(*tmpsysobj).renderer).window = window;
     (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
 
+    //At some point this thing below will be configurable
+    //For now, just use the fucking value
+
+    (*(*tmpsysobj).renderer).alpha_color = SDL_MapRGB((*(*(*system_objects).renderer).screen).format, 250,162,255);
+ 
     return tmpsysobj;
+}
+
+//model stuff functions
+
+//render stuff functions
+SDL_Surface* LoadImageToSurface(char* imgname){
+    SDL_RWops *file = SDL_RWFromFile(imgname, "rb");
+    SDL_Surface *image = IMG_Load_RW(file, 1);
+    return image;
+}
+
+void FlushToScreen(SDL_Surface* layer){
+    if(!layer) return; //check layer
+    //Check for size sameness
+    if((*(*(*system_objects).renderer).screen).w != (*layer).w || (*(*(*system_objects).renderer).screen).h != (*layer).h) return; //I'm a real big fan of returning early if error encountered
+    //assume alpha channel for 250,162,255
+    //Should have alpha channel now for transparency in layers
+    SDL_SetSurfaceAlphaMod(layer, 0);
+    SDL_SetColorKey((*(*system_objects).renderer).screen, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
+    
+    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
+}
+
+void RenderScreen(){
+    SDL_UpdateWindowSurface((*(*system_objects).renderer).window);
+//clear screen buffer after successful update
+    SDL_FillRect((*(*system_objects).renderer).screen, NULL, 0);
 }
 
 //these guys handle event creation/resolution
@@ -100,7 +144,7 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
 struct EventController* CreateEvent(enum EventCodes eventcode){
     struct EventController* eventControl = (struct EventController*)malloc(sizeof(struct EventController));
     
-    (eventControl*).event_code = eventcode;
+    (*eventControl).event_code = eventcode;
 
     switch(eventcode)
     {
@@ -124,6 +168,7 @@ void ResolveEvent(struct EventController* resolver){
         return; //I'm a big fan of returning early during checks
     }
     (*resolver).Controller(); // Simple enough
+    free(resolver);
 }
 
 //these guys manage the event queue
@@ -155,7 +200,6 @@ void InputPushQueue(struct EventController* pushed){
 void InitSystem(){
     system_objects = InitConfig(&system_configs); //this is simple for now
     //setup system event queue here...
-    
 }
 
 
@@ -165,11 +209,12 @@ void StartSystem(){
 
     if((*(*system_objects).renderer).screen != NULL){
         (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
-}
+    }
 //Root loop things can be scheduled around this
     for(;;){
         struct EventController* tmpEvent = InputPopQueue();
-	
+	ResolveEvent(tmpEvent);
+        RenderScreen();
     }
 }
 
@@ -199,8 +244,8 @@ void userFunction1(){ //I really like this name
 //here in this huge block of code a loader would do something
 //I see evolution this way, hardcode -> macros -> JSON C objs
 system_configs.windowName = "Figurine";
-system_configs.height = 640;
-system_configs.width = 480;
+system_configs.width = 640;
+system_configs.height = 480;
 }
 //Well the above shit works for sure
 
