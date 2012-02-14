@@ -39,6 +39,7 @@ struct SysObjs{
 //Small struct to hold video objects
 struct Renderer{
     SDL_Window* window;
+    SDL_Surface* back_buff;
     SDL_Surface* screen;
     Uint32 alpha_color;
     int (*RenderFunc)();
@@ -82,7 +83,7 @@ void InitSystem();
 void StartSystem();
 void StopSystem();
 void QuitSystem();
-struct EventController* CreateEvent(enum EventCodes eventcode);
+struct EventController* CreateSystemEvent(enum EventCodes eventcode);
 void ResolveEvent(struct EventController* resolver);
 struct EventController* InputPopQueue();
 void InputPushQueue(struct EventController* pushed);
@@ -99,7 +100,8 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
 
     (*(*tmpsysobj).renderer).window = window;
     (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
-
+    SDL_Surface* sptr = (*(*tmpsysobj).renderer).screen;
+    (*(*tmpsysobj).renderer).back_buff = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
     //At some point this thing below will be configurable
     //For now, just use the fucking value
 
@@ -124,15 +126,20 @@ void FlushToScreen(SDL_Surface* layer){
     //assume alpha channel for 250,162,255
     //Should have alpha channel now for transparency in layers
     SDL_SetSurfaceAlphaMod(layer, 0);
-    SDL_SetColorKey((*(*system_objects).renderer).screen, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
+    SDL_SetColorKey(layer, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
     
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
+    //I like this line here; instead of screen back up buffer
+    SDL_BlitSurface(layer, NULL, (*(*system_objects).back_buff).screen, NULL);
+    //is a mirror of the screen
 }
 
 void RenderScreen(){
     SDL_UpdateWindowSurface((*(*system_objects).renderer).window);
 //clear screen buffer after successful update
     SDL_FillRect((*(*system_objects).renderer).screen, NULL, 0);
+    SDL_FillRect((*(*system_objects).renderer).back_buff, NULL, 0);
+    //ready for new frame!
 }
 
 //these guys handle event creation/resolution
@@ -141,7 +148,7 @@ void RenderScreen(){
 //Please fucking change this if you feel that it needs to be, don't even 
 //hesitate. I don't like over using if statements and a switch() is just that
 
-struct EventController* CreateEvent(enum EventCodes eventcode){
+struct EventController* CreateSystemEvent(enum EventCodes eventcode){
     struct EventController* eventControl = (struct EventController*)malloc(sizeof(struct EventController));
     
     (*eventControl).event_code = eventcode;
@@ -209,6 +216,8 @@ void StartSystem(){
 
     if((*(*system_objects).renderer).screen != NULL){
         (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
+//recover the screen data hopefully
+    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
     }
 //Root loop things can be scheduled around this
     for(;;){
@@ -220,7 +229,9 @@ void StartSystem(){
 
 //Throws an event to back up 
 void StopSystem(){
+//hurry
 //save state of the buffer to somewhere!
+
 
 //need more of the system implemented before I can fill out this stub
 }
