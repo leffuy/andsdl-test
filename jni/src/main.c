@@ -130,7 +130,7 @@ void FlushToScreen(SDL_Surface* layer){
     
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
     //I like this line here; instead of screen back up buffer
-    SDL_BlitSurface(layer, NULL, (*(*system_objects).back_buff).screen, NULL);
+    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).back_buff, NULL);
     //is a mirror of the screen
 }
 
@@ -217,7 +217,7 @@ void StartSystem(){
     if((*(*system_objects).renderer).screen != NULL){
         (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
 //recover the screen data hopefully
-    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
+    SDL_BlitSurface((*(*system_objects).renderer).back_buff, NULL, (*(*system_objects).renderer).screen, NULL);
     }
 //Root loop things can be scheduled around this
     for(;;){
