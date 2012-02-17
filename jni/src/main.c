@@ -106,7 +106,7 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     //At some point this thing below will be configurable
     //For now, just use the fucking value
 
-    (*(*tmpsysobj).renderer).alpha_color = SDL_MapRGB((*(*(*system_objects).renderer).screen).format, 250,162,255);
+    (*(*tmpsysobj).renderer).alpha_color = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
  
     return tmpsysobj;
 }
