@@ -89,6 +89,7 @@ struct EventController* InputPopQueue();
 void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
+void renderTest();
 
 //Init's screen and window stuff
 struct SysObjs* InitConfig(struct ConfigSys *conf){
@@ -223,6 +224,7 @@ void StartSystem(){
     for(;;){
         struct EventController* tmpEvent = InputPopQueue();
 	ResolveEvent(tmpEvent);
+	renderTest();
         RenderScreen();
     }
 }
@@ -248,7 +250,7 @@ void QuitSystem(){
 //SANDBOX AREA below
 
 //test "user code" area
-void userFunction1(){ //I really like this name
+void setupTest(){ //I really like this name
 //I guess I'll use this to define my system_configs
 //And as an example of a "loader"
 
@@ -258,16 +260,38 @@ system_configs.windowName = "Figurine";
 system_configs.width = 640;
 system_configs.height = 480;
 }
+
+void renderTest(){
+SDL_Rect dstrectum;
+dstrectum.x = 20;
+dstrectum.y = 20;
+dstrectum.w = 40;
+dstrectum.h = 40;
+
+SDL_Surface* sptr = (*(*system_objects).renderer).screen;
+
+SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
+
+SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
+
+SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
+
+FlushToScreen(testSurface);
+
+SDL_FreeSurface(rectangleTest);
+SDL_FreeSurface(testSurface);
+} // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure
 
 //entry point for application start
 int main(int argc, char* argv[])
 {
-    userFunction1();
+    setupTest();
     InitSystem();
 //Here we should load game related stuff;
 //This is what I imagine:
     //LoadCosmos("userDataFile"); //loads the world file
+
     StartSystem();
 
     //Wow with the way we set it up main is very simple
