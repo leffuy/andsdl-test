@@ -106,7 +106,11 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     //At some point this thing below will be configurable
     //For now, just use the fucking value
 
-    (*(*tmpsysobj).renderer).alpha_color = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
+//    (*(*tmpsysobj).renderer).alpha_color = 
+    //Tom theorizes this will work. (by induction)
+    SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
+    //Should print SOMETHING before it segfaults, which I'm sure it will
+    SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
  
     return tmpsysobj;
 }
@@ -171,8 +175,10 @@ struct EventController* CreateSystemEvent(enum EventCodes eventcode){
 }
 
 void ResolveEvent(struct EventController* resolver){
+    if(!resolver) return;
     if(!(*resolver).Controller){
         free(resolver);
+        resolver=NULL;
         return; //I'm a big fan of returning early during checks
     }
     (*resolver).Controller(); // Simple enough
