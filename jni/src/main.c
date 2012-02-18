@@ -89,6 +89,8 @@ struct EventController* InputPopQueue();
 void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
+void SetRenderFunc(int (*RenderFunc)());
+
 void renderTest();
 
 //Init's screen and window stuff
@@ -110,8 +112,9 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     //Tom theorizes this will work. (by induction)
     SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
     //Should print SOMETHING before it segfaults, which I'm sure it will
-    SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
- 
+    SDL_Log("What kind is this? %d", SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255));
+//  SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
+
     return tmpsysobj;
 }
 
@@ -216,6 +219,9 @@ void InitSystem(){
     //setup system event queue here...
 }
 
+void SetRenderFunc(int (*RenderFunc)()){
+(*(*system_objects).renderer).RenderFunc = RenderFunc;
+}
 
 void StartSystem(){
     if(!(*system_objects).renderer)
@@ -230,7 +236,7 @@ void StartSystem(){
     for(;;){
         struct EventController* tmpEvent = InputPopQueue();
 	ResolveEvent(tmpEvent);
-	renderTest();
+        (*(*system_objects).renderer).RenderFunc();
         RenderScreen();
     }
 }
@@ -267,6 +273,15 @@ system_configs.width = 640;
 system_configs.height = 480;
 }
 
+
+SDL_Surface* blahder;
+
+//flush to screen here per frame 
+int myRenderFunc(){
+FlushToScreen(blahder);
+return 0;
+}
+
 void renderTest(){
 SDL_Rect dstrectum;
 dstrectum.x = 20;
@@ -282,10 +297,9 @@ SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
 
 SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
 
-FlushToScreen(testSurface);
-
 SDL_FreeSurface(rectangleTest);
-SDL_FreeSurface(testSurface);
+
+blahder = testSurface;
 } // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure
 
@@ -297,7 +311,8 @@ int main(int argc, char* argv[])
 //Here we should load game related stuff;
 //This is what I imagine:
     //LoadCosmos("userDataFile"); //loads the world file
-
+    renderTest(); //setups the render system sort of
+    SetRenderFunc(&myRenderFunc);
     StartSystem();
 
     //Wow with the way we set it up main is very simple
