@@ -148,6 +148,7 @@ void FlushToScreen(SDL_Surface* layer){
 void RenderScreen(){
     SDL_UpdateWindowSurface((*(*system_objects).renderer).window);
 //clear screen buffer after successful update
+    SDL_Log("Render error %s", SDL_GetError());
     SDL_FillRect((*(*system_objects).renderer).screen, NULL, 0);
     SDL_FillRect((*(*system_objects).renderer).back_buff, NULL, 0);
     //ready for new frame!
@@ -299,12 +300,16 @@ void QuitSystem(){
 }
 
 void ResumeSystem(){
-    SDL_Delay(5000);
     SDL_Log("Handle to screen: %d", (*(*system_objects).renderer).screen);
     SDL_Log("Handle to backup: %d", (*(*system_objects).renderer).back_buff);
     SDL_Log("Handle to window: %d", (*(*system_objects).renderer).window);
-    (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
+    SDL_Delay(5000);
+//    SDL_GL_CreateContext((*(*system_objects).renderer).window);
 //recover the screen data hopefully
+    SDL_Log("Window recreation");
+    SDL_RecreateWindow((*(*system_objects).renderer).window, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+    SDL_Log("Window recreation done, Getting new surface");
+    (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
     SDL_Log("GetWindow error? %s \n", SDL_GetError());
     SDL_Log("GetWindow error? %s \n", SDL_GetError());
     SDL_BlitSurface((*(*system_objects).renderer).back_buff, NULL, (*(*system_objects).renderer).screen, NULL);
