@@ -55,6 +55,8 @@ struct EventController{
 
 enum EventCodes {
     TAND_INIT,
+    TAND_PAUSE,
+    TAND_RESUME,
     TAND_QUIT
 }; //Basic event codes for case in event creation
 
@@ -82,15 +84,16 @@ struct SysObjs* InitConfig(struct ConfigSys *conf);
 void InitSystem();
 void StartSystem();
 void StopSystem();
+void ResumeSystem();
 void QuitSystem();
-struct EventController* CreateSystemEvent(enum EventCodes eventcode);
-void ResolveEvent(struct EventController* resolver);
+struct EventController* CreateEvent(enum EventCodes eventcode);
+int ResolveEvent(struct EventController* resolver);
+void ResolveSystemEvent();
 struct EventController* InputPopQueue();
 void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
-
 void renderTest();
 
 //Init's screen and window stuff
@@ -156,36 +159,59 @@ void RenderScreen(){
 //Please fucking change this if you feel that it needs to be, don't even 
 //hesitate. I don't like over using if statements and a switch() is just that
 
-struct EventController* CreateSystemEvent(enum EventCodes eventcode){
+struct EventController* CreateEvent(enum EventCodes eventcode){
     struct EventController* eventControl = (struct EventController*)malloc(sizeof(struct EventController));
-    
+    (*eventControl).next = NULL; 
     (*eventControl).event_code = eventcode;
-
-    switch(eventcode)
-    {
-        case TAND_INIT:
-          //I imagine a specific controller function ptr is set here
-        break;
-
-        case TAND_QUIT:
-          //For each scenario and shit
-        break;
-
-        default:
-            return NULL;
-    }
     return eventControl;
 }
 
-void ResolveEvent(struct EventController* resolver){
-    if(!resolver) return;
+//Another note to patrick:
+//This will set up the input 
+
+int ResolveEvent(struct EventController* resolver){
+    if(!resolver) return 0;
+    if((*resolver).event_code == TAND_PAUSE){
+        free(resolver);
+        return 1;
+    }
+    if((*resolver).event_code == TAND_RESUME){
+        free(resolver);
+        return 2;
+    }
     if(!(*resolver).Controller){
         free(resolver);
-        resolver=NULL;
-        return; //I'm a big fan of returning early during checks
+        return 0; //I'm a big fan of returning early during checks
     }
     (*resolver).Controller(); // Simple enough
     free(resolver);
+    return 0;
+}
+
+void ResolveSystemEvent(){
+    SDL_Event sdl_events;
+    SDL_PollEvent(&sdl_events);
+    //system switch
+//    SDL_Log("Entered system resolver");
+//    SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_events.type,SDL_WINDOWEVENT);
+    switch(sdl_events.type){
+        case SDL_QUIT:
+            //this definitely needs some handling shit
+            break;
+        case SDL_WINDOWEVENT:
+//                SDL_Log("Window Event: %d", sdl_events.window.event);
+            if(sdl_events.window.event == SDL_WINDOWEVENT_HIDDEN ||
+               sdl_events.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
+                InputPushQueue(CreateEvent(TAND_PAUSE));
+                SDL_Log("window goes to background"); 
+            }
+            if(sdl_events.window.event == SDL_WINDOWEVENT_SHOWN ||
+               sdl_events.window.event == SDL_WINDOWEVENT_FOCUS_GAINED){ 
+                InputPushQueue(CreateEvent(TAND_RESUME));
+                SDL_Log("window goes to foreground"); 
+            }
+            break;
+    }
 }
 
 //these guys manage the event queue
@@ -193,12 +219,15 @@ struct EventController* InputPopQueue(){
     if(!headController)
         return NULL;
 
-    return headController;
+    struct EventController* controlman =  headController;
 
     if((*headController).next){
        headController = (*headController).next;
     }
-
+    else{
+       headController = NULL;
+    }
+    return controlman;
 }
 
 void InputPushQueue(struct EventController* pushed){
@@ -208,6 +237,7 @@ void InputPushQueue(struct EventController* pushed){
         return;
     }
     (*tailController).next = pushed;
+    tailController = pushed;
 }
 
 //I have a feeling at some point this will put in an interface 
@@ -220,33 +250,47 @@ void InitSystem(){
 }
 
 void SetRenderFunc(int (*RenderFunc)()){
-(*(*system_objects).renderer).RenderFunc = RenderFunc;
+    (*(*system_objects).renderer).RenderFunc = RenderFunc;
 }
 
 void StartSystem(){
     if(!(*system_objects).renderer)
         return; //kind of like throwing an exception?
 
-    if((*(*system_objects).renderer).screen != NULL){
-        (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
-//recover the screen data hopefully
-    SDL_BlitSurface((*(*system_objects).renderer).back_buff, NULL, (*(*system_objects).renderer).screen, NULL);
-    }
+    
 //Root loop things can be scheduled around this
     for(;;){
+        ResolveSystemEvent();
         struct EventController* tmpEvent = InputPopQueue();
-	ResolveEvent(tmpEvent);
-        (*(*system_objects).renderer).RenderFunc();
+        //events are read in the main thread, and pushed from all threads
+
+        //resolve event is setup to launch it's own threads
+	if(ResolveEvent(tmpEvent) == 1){ //this will plug into the pause menu
+        //omg another one                   one day
+            SDL_MinimizeWindow((*(*system_objects).renderer).window);
+            for(;;){
+//                SDL_Log("We have entered the idle event looper");
+                ResolveSystemEvent();
+                struct EventController* tmpEventIdle = InputPopQueue();
+                if(ResolveEvent(tmpEventIdle) == 2){
+                    ResumeSystem();
+                    SDL_Log("Resuming last screen state");
+                    break;
+                }
+            }
+        }
+        //This should be in the most root thread along with IO
+
+        if((*(*system_objects).renderer).RenderFunc)
+            (*(*system_objects).renderer).RenderFunc();
+
         RenderScreen();
     }
 }
 
-//Throws an event to back up 
+//Throws an event from any thread to cause start_system to break earlier when
+//event is found 
 void StopSystem(){
-//hurry
-//save state of the buffer to somewhere!
-
-
 //need more of the system implemented before I can fill out this stub
 }
 
@@ -254,7 +298,19 @@ void QuitSystem(){
 
 }
 
-
+void ResumeSystem(){
+    SDL_Delay(5000);
+    SDL_Log("Handle to screen: %d", (*(*system_objects).renderer).screen);
+    SDL_Log("Handle to backup: %d", (*(*system_objects).renderer).back_buff);
+    SDL_Log("Handle to window: %d", (*(*system_objects).renderer).window);
+    (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
+//recover the screen data hopefully
+    SDL_Log("GetWindow error? %s \n", SDL_GetError());
+    SDL_Log("GetWindow error? %s \n", SDL_GetError());
+    SDL_BlitSurface((*(*system_objects).renderer).back_buff, NULL, (*(*system_objects).renderer).screen, NULL);
+ 
+//    renderTest();
+}
 
 //here some kind of rampant loader to load the fields 
 //do some tests first
