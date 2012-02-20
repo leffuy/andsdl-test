@@ -23,7 +23,8 @@
 
 
 //platform structures
-
+struct Model;
+struct Cosmos;
 //expandable configurator
 struct ConfigSys{
     char* windowName; //Name the window mang
@@ -45,6 +46,15 @@ struct Renderer{
     int (*RenderFunc)();
 };
 
+//A render helper to allow for sprites
+struct Sprite{
+    int frames;
+    int width, height;
+    int screenX, screenY;
+    SDL_Surface* frame_strip;
+    SDL_Surface* currentFrame;
+};
+
 //Event-Controller interface
 struct EventController{
     unsigned int event_code;
@@ -60,13 +70,19 @@ enum EventCodes {
     TAND_QUIT
 }; //Basic event codes for case in event creation
 
-//Basic struct for event queue <- nixed cause I don't want to dereference that
-
-//Controller list
-//Event code 1, 2, 3...etc
-
 
 //Here goes the model stuff
+struct Cosmos{
+   
+
+}; //Serves as a model database
+
+struct Model {
+    struct Sprite* appearance; //appearance map
+    int worldX, worldY; //from the world
+    //here is where the chipmunk actor goes
+};
+//Essentially an actor with a sprite attached
 
 
 //here goes render stuff
@@ -94,6 +110,8 @@ void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
+
+//ewww I hate this function not part of the platform just a test
 void renderTest();
 
 //Init's screen and window stuff
@@ -116,7 +134,9 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
     //Should print SOMETHING before it segfaults, which I'm sure it will
     SDL_Log("What kind is this? %d", SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255));
-//  SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
+    Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
+    (*(*tmpsysobj).renderer).alpha_color = alpha;
+
 
     return tmpsysobj;
 }
