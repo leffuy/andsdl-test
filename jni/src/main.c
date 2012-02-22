@@ -323,7 +323,8 @@ void ResumeSystem(){
     SDL_Log("Handle to screen: %d", (*(*system_objects).renderer).screen);
     SDL_Log("Handle to backup: %d", (*(*system_objects).renderer).back_buff);
     SDL_Log("Handle to window: %d", (*(*system_objects).renderer).window);
-    SDL_Delay(5000);
+    SDL_GL_SwapWinow((*(*system_objects).renderer).window);
+//    SDL_Delay(5000);
 //    SDL_GL_CreateContext((*(*system_objects).renderer).window);
 //recover the screen data hopefully
     SDL_Log("Window recreation");
