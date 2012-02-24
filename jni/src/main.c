@@ -16,6 +16,8 @@
 //includes
 #include <malloc.h> //my favorite of all memory allocators, never lets me down
 #include <stdio.h> //for NULL. I mean seriously...
+
+#include "hashmap.h"
 #include "SDL.h"
 #include "SDL_image.h"
 
@@ -24,7 +26,10 @@
 
 //platform structures
 struct Model;
+struct ModelIndex;
 struct Cosmos;
+struct Sprite;
+
 //expandable configurator
 struct ConfigSys{
     char* windowName; //Name the window mang
@@ -39,6 +44,7 @@ struct SysObjs{
 
 //Small struct to hold video objects
 struct Renderer{
+    int width, height;
     SDL_Window* window;
     SDL_Surface* back_buff;
     SDL_Surface* screen;
@@ -49,6 +55,7 @@ struct Renderer{
 //A render helper to allow for sprites
 struct Sprite{
     int frames;
+    int currentframe;
     int width, height;
     int screenX, screenY;
     SDL_Surface* frame_strip;
@@ -73,11 +80,20 @@ enum EventCodes {
 
 //Here goes the model stuff
 struct Cosmos{
-   
+    struct ModelIndex* indices;
+    int screenX, screenY;
+    map_t models;
+    //models go here
 
 }; //Serves as a model database
 
-struct Model {
+struct ModelIndex{
+    char* id;
+    struct ModelIndex* next;
+};
+
+struct Model{
+    char* id;
     struct Sprite* appearance; //appearance map
     int worldX, worldY; //from the world
     //here is where the chipmunk actor goes
@@ -121,6 +137,9 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     //do something with these 
     struct SysObjs* tmpsysobj = (struct SysObjs*)malloc(sizeof(struct SysObjs));
     (*tmpsysobj).renderer = (struct Renderer*)malloc(sizeof(struct Renderer));
+
+    (*(*tmpsysobj).renderer).width = (*conf).width;
+    (*(*tmpsysobj).renderer).height = (*conf).height;
 
     (*(*tmpsysobj).renderer).window = window;
     (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
@@ -302,6 +321,7 @@ void StartSystem(){
         }
         //This should be in the most root thread along with IO
 
+//ALl objects will have their own render function
         if((*(*system_objects).renderer).RenderFunc)
             (*(*system_objects).renderer).RenderFunc();
 
@@ -323,18 +343,19 @@ void ResumeSystem(){
     SDL_Log("Handle to screen: %d", (*(*system_objects).renderer).screen);
     SDL_Log("Handle to backup: %d", (*(*system_objects).renderer).back_buff);
     SDL_Log("Handle to window: %d", (*(*system_objects).renderer).window);
-    SDL_Delay(5000);
-//    SDL_GL_CreateContext((*(*system_objects).renderer).window);
+//    SDL_Delay(5000);
+    //Try a window swap to get thie 
+    SDL_GL_SwapWindow((*(*system_objects).renderer).window);
 //recover the screen data hopefully
     SDL_Log("Window recreation");
-    SDL_RecreateWindow((*(*system_objects).renderer).window, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+ //   SDL_RecreateWindow((*(*system_objects).renderer).window, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     SDL_Log("Window recreation done, Getting new surface");
     (*(*system_objects).renderer).screen = SDL_GetWindowSurface((*(*system_objects).renderer).window); //get a new handle to the screen if lost somehow
     SDL_Log("GetWindow error? %s \n", SDL_GetError());
     SDL_Log("GetWindow error? %s \n", SDL_GetError());
     SDL_BlitSurface((*(*system_objects).renderer).back_buff, NULL, (*(*system_objects).renderer).screen, NULL);
  
-//    renderTest();
+    renderTest();
 }
 
 //here some kind of rampant loader to load the fields 
@@ -359,7 +380,7 @@ SDL_Surface* blahder;
 
 //flush to screen here per frame 
 int myRenderFunc(){
-FlushToScreen(blahder);
+FlushToScreen(blahder); //think of blahder as the master layer
 return 0;
 }
 
