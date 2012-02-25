@@ -100,9 +100,7 @@ struct Model{
 };
 //Essentially an actor with a sprite attached
 
-
 //here goes render stuff
-
 
 //System-wide Variable Structs
 //Contains Renderer and Input mechanisms, etc.
@@ -110,6 +108,7 @@ struct ConfigSys system_configs; //maybe these will be pointers one day...
 struct SysObjs* system_objects;
 struct EventController* headController;
 struct EventController* tailController;
+map_t CosmosMap = 0;
 
 //platform functions declares
 struct SysObjs* InitConfig(struct ConfigSys *conf);
@@ -126,9 +125,28 @@ void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
+void AddToCosmos(struct Model inmodel);
+void RemoveFromCosmos(char* key);
+struct Model* GetFromCosmos(char* key);
 
 //ewww I hate this function not part of the platform just a test
 void renderTest();
+
+//Cosmos Stuff?
+void AddToCosmos(struct Model inmodel){
+    hashmap_put(CosmosMap, inmodel.id, (any_t)(&inmodel));
+}
+
+struct Model* GetFromCosmos(char* key){
+    struct Model* p_model = 0;
+    hashmap_get(CosmosMap, key, (any_t*)(&p_model));
+    return p_model;
+}
+
+void RemoveFromCosmos(char* key){
+    hashmap_remove(CosmosMap, key);
+    //some possible error checking here
+}
 
 //Init's screen and window stuff
 struct SysObjs* InitConfig(struct ConfigSys *conf){
