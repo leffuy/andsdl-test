@@ -24,7 +24,7 @@
 //defines
 
 
-//platform structures
+//platform structures declarations
 struct Model;
 struct ModelIndex;
 struct Cosmos;
@@ -49,7 +49,7 @@ struct Renderer{
     SDL_Surface* back_buff;
     SDL_Surface* screen;
     Uint32 alpha_color;
-    int (*RenderFunc)();
+    int (*RenderFunc)(); //need to deprecate this
 };
 
 //A render helper to allow for sprites
@@ -102,13 +102,14 @@ struct Model{
 
 //here goes render stuff
 
-//System-wide Variable Structs
+//System-wide Variable Structs; aka Singletons
 //Contains Renderer and Input mechanisms, etc.
 struct ConfigSys system_configs; //maybe these will be pointers one day...
 struct SysObjs* system_objects;
 struct EventController* headController;
 struct EventController* tailController;
-map_t CosmosMap = 0;
+struct Cosmos kosmos;
+//map_t CosmosMap = 0; //soon to be deprecated
 
 //platform functions declares
 struct SysObjs* InitConfig(struct ConfigSys *conf);
@@ -125,6 +126,7 @@ void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
+void InitCosmos();
 void AddToCosmos(struct Model inmodel);
 void RemoveFromCosmos(char* key);
 struct Model* GetFromCosmos(char* key);
@@ -133,18 +135,22 @@ struct Model* GetFromCosmos(char* key);
 void renderTest();
 
 //Cosmos Stuff?
+void InitCosmos(){
+    kosmos.models = hashmap_new();
+}
+
 void AddToCosmos(struct Model inmodel){
-    hashmap_put(CosmosMap, inmodel.id, (any_t)(&inmodel));
+    hashmap_put(kosmos.models, inmodel.id, (any_t)(&inmodel));
 }
 
 struct Model* GetFromCosmos(char* key){
     struct Model* p_model = 0;
-    hashmap_get(CosmosMap, key, (any_t*)(&p_model));
+    hashmap_get(kosmos.models, key, (any_t*)(&p_model));
     return p_model;
 }
 
 void RemoveFromCosmos(char* key){
-    hashmap_remove(CosmosMap, key);
+    hashmap_remove(kosmos.models, key);
     //some possible error checking here
 }
 
@@ -173,7 +179,7 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     SDL_Log("What kind is this? %d", SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255));
     Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
     (*(*tmpsysobj).renderer).alpha_color = alpha;
-
+    SDL_Log("Alpha color raw: %d", (*(*tmpsysobj).renderer).alpha_color);
 
     return tmpsysobj;
 }
@@ -195,11 +201,11 @@ void FlushToScreen(SDL_Surface* layer){
     //Should have alpha channel now for transparency in layers
     SDL_SetSurfaceAlphaMod(layer, 0);
     SDL_SetColorKey(layer, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
-    
+
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
     //I like this line here; instead of screen back up buffer
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).back_buff, NULL);
-    //is a mirror of the screen
+    //is a mirror of the screen; this may be unnecessary in future
 }
 
 void RenderScreen(){
