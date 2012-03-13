@@ -201,6 +201,7 @@ void FlushToScreen(SDL_Surface* layer){
     //Should have alpha channel now for transparency in layers
     SDL_SetSurfaceAlphaMod(layer, 0);
     SDL_SetColorKey(layer, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
+    SDL_Log("Alpha color raw: %d", (*(*tmpsysobj).renderer).alpha_color);
 
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
     //I like this line here; instead of screen back up buffer
