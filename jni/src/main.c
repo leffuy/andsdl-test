@@ -485,6 +485,20 @@ SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*spt
 
 SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
 
+//going to lock the surface and make the entire rectangle the alpha color
+int i = 0;
+int j = 0;
+SDL_LockSurface( rectangleTest );
+for(i = 0; i < 40; i++){
+for(j = 0; j < 40; j++){
+putpixel(rectangleTest, i, j, (system_objects->renderer)->alpha_color);
+}
+}
+i=0;
+j=0;
+SDL_UnlockSurface( rectangleTest );
+
+SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
 
 SDL_FreeSurface(rectangleTest);
