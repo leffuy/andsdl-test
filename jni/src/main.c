@@ -130,12 +130,15 @@ void InitCosmos();
 void AddToCosmos(struct Model inmodel);
 void RemoveFromCosmos(char* key);
 struct Model* GetFromCosmos(char* key);
+
+//Utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y);
 void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 
 //ewww I hate this function not part of the platform just a test
 void renderTest();
 
+//utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y){
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
@@ -440,7 +443,7 @@ void ResumeSystem(){
     SDL_Log("GetWindow error? %s \n", SDL_GetError());
     SDL_BlitSurface((*(*system_objects).renderer).back_buff, NULL, (*(*system_objects).renderer).screen, NULL);
  
-    renderTest();
+//    renderTest();
 }
 
 //here some kind of rampant loader to load the fields 
