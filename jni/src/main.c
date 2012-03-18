@@ -481,9 +481,10 @@ dstrectum.h = 40;
 
 SDL_Surface* sptr = (*(*system_objects).renderer).screen;
 
-SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
 
 SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
+
+SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
 
 //going to lock the surface and make the entire rectangle the alpha color
 int i = 0;
@@ -498,12 +499,14 @@ i=0;
 j=0;
 SDL_UnlockSurface( rectangleTest );
 
-SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
+//this seems to work for the original blit
+//SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
 
 SDL_FreeSurface(rectangleTest);
 
 blahder = testSurface;
+//SDL_SetColorKey(blahder, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 } // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure
 
