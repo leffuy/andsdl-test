@@ -1,3 +1,4 @@
 Test the alpha channels [Completed]
 Test batch rendering via Cosmos Models [Not Done]
-Fix color key alpha options. [Not Done]
+Fix color key alpha options [Completed]
+Split files into domain pieces after model/cosmos completion [Not Done]
