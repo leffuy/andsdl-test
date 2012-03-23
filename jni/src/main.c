@@ -88,6 +88,7 @@ struct Cosmos{
     int screenX, screenY;
     //models go here
     struct Model* model_hash;
+    struct Renderer* r_ptr; //Cosmos gets direct access to the renderer assets
 }; //Serves as a model database
 //A first optimization will revolve around partitioning the very large space in
 //which the cosmos encompasses and organizing it easily for rendering and 
@@ -114,23 +115,29 @@ struct EventController* headController;
 struct EventController* tailController;
 struct Cosmos kosmos;
 
-//platform system level function's declares
+//platform function's declares
+  //system functions 
 struct SysObjs* InitConfig(struct ConfigSys *conf);
 void InitSystem();
 void StartSystem();
 void StopSystem();
 void ResumeSystem();
 void QuitSystem();
+  //events and input section
 struct EventController* CreateEvent(enum EventCodes eventcode);
 int ResolveEvent(struct EventController* resolver);
 void ResolveSystemEvent();
 struct EventController* InputPopQueue();
 void InputPushQueue(struct EventController* pushed);
-SDL_Surface* LoadImageToSurface(char* imgname);
+  //render functions
+void FlushToScreen(SDL_Surface* layer);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
+  //render utility
+SDL_Surface* LoadImageToSurface(char* imgname);
 
-//Cosmos model function's declares
+//Model system (plugs into renderer above);
+  //Cosmos model function's declares
 void InitCosmos();
 void AddCosmos(struct Model *m);
 struct Model* GetCosmos(int key);
@@ -545,3 +552,4 @@ int main(int argc, char* argv[])
 
 //One day I will remove all the comments. This shit is stupid.
 //I feel like this will annoy a good programmer rather than help.
+//but for some reason it helps me (as of now)
