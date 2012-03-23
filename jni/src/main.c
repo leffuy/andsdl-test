@@ -17,7 +17,8 @@
 #include <malloc.h> //my favorite of all memory allocators, never lets me down
 #include <stdio.h> //for NULL. I mean seriously...
 
-#include "hashmap.h"
+#include "uthash.h"
+//#include "hashmap.h"
 #include "SDL.h"
 #include "SDL_image.h"
 
@@ -79,24 +80,27 @@ enum EventCodes {
 
 
 //Here goes the model stuff
+//Models based on a 2-dimensional Cosmos. For the start
+//the screenX and screenY determine the camera placement
+//in the huge "open" world. The models correlate to everything in the world
+//including basic terrain (this will likely be the first thing to be expanded)
 struct Cosmos{
-    struct ModelIndex* indices;
     int screenX, screenY;
-    map_t models;
     //models go here
-
+    struct Model* model_hash;
 }; //Serves as a model database
+//A first optimization will revolve around partitioning the very large space in
+//which the cosmos encompasses and organizing it easily for rendering and 
+//computation
 
-struct ModelIndex{
-    char* id;
-    struct ModelIndex* next;
-};
-
+//Model Index unnecessary; wasted lines like this comment
 struct Model{
-    char* id;
+    int id; //serves as pk
+    char* name;
     struct Sprite* appearance; //appearance map
     int worldX, worldY; //from the world
     //here is where the chipmunk actor goes
+    UT_hash_handle hh;         /* makes this structure hashable */
 };
 //Essentially an actor with a sprite attached
 
@@ -109,9 +113,8 @@ struct SysObjs* system_objects;
 struct EventController* headController;
 struct EventController* tailController;
 struct Cosmos kosmos;
-//map_t CosmosMap = 0; //soon to be deprecated
 
-//platform functions declares
+//platform system level function's declares
 struct SysObjs* InitConfig(struct ConfigSys *conf);
 void InitSystem();
 void StartSystem();
@@ -126,10 +129,13 @@ void InputPushQueue(struct EventController* pushed);
 SDL_Surface* LoadImageToSurface(char* imgname);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
+
+//Cosmos model function's declares
 void InitCosmos();
-void AddToCosmos(struct Model inmodel);
-void RemoveFromCosmos(char* key);
-struct Model* GetFromCosmos(char* key);
+void AddCosmos(struct Model *m);
+struct Model* GetCosmos(int key);
+void DelCosmos(int key);
+
 
 //Utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y);
@@ -199,22 +205,25 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel){
 
 //Cosmos Stuff?
 void InitCosmos(){
-    kosmos.models = hashmap_new();
+    kosmos.model_hash = NULL;
 }
 
-void AddToCosmos(struct Model inmodel){
-    hashmap_put(kosmos.models, inmodel.id, (any_t)(&inmodel));
+void AddCosmos(struct Model *m){
+    HASH_ADD_INT(kosmos.model_hash, id, m);
 }
 
-struct Model* GetFromCosmos(char* key){
-    struct Model* p_model = 0;
-    hashmap_get(kosmos.models, key, (any_t*)(&p_model));
-    return p_model;
+struct Model* GetCosmos(int key){
+    struct Model* m = NULL;
+    
+    HASH_FIND_INT(kosmos.model_hash, &key, m);
+
+    return m;
 }
 
-void RemoveFromCosmos(char* key){
-    hashmap_remove(kosmos.models, key);
-    //some possible error checking here
+void DelCosmos(int key){
+    struct Model* m = NULL;
+    m = GetCosmos(key);
+    HASH_DEL(kosmos.model_hash, m);
 }
 
 //Init's screen and window stuff
@@ -233,16 +242,16 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     SDL_Surface* sptr = (*(*tmpsysobj).renderer).screen;
     (*(*tmpsysobj).renderer).back_buff = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
     //At some point this thing below will be configurable
-    //For now, just use the fucking value
+    //For now, just use the fucking value: 255,162,249
+    //will send out value from jpg created using gimp
 
-//    (*(*tmpsysobj).renderer).alpha_color = 
     //Tom theorizes this will work. (by induction)
-    SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
+ //   SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
     //Should print SOMETHING before it segfaults, which I'm sure it will
-    SDL_Log("What kind is this? %d", SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255));
-    Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255);
+//    SDL_Log("What kind is this? %d", SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255));
+    Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 255,162,249);
     (*(*tmpsysobj).renderer).alpha_color = alpha;
-    SDL_Log("Alpha color raw: %d", (*(*tmpsysobj).renderer).alpha_color);
+//    SDL_Log("Alpha color raw: %d", (*(*tmpsysobj).renderer).alpha_color);
 
     return tmpsysobj;
 }
@@ -264,7 +273,7 @@ void FlushToScreen(SDL_Surface* layer){
     //Should have alpha channel now for transparency in layers
 //    SDL_SetSurfaceAlphaMod(layer, 0);
     SDL_SetColorKey(layer, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
-    SDL_Log("Alpha color raw: %d", (*(*system_objects).renderer).alpha_color);
+//    SDL_Log("Alpha color raw: %d", (*(*system_objects).renderer).alpha_color);
 
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
     //I like this line here; instead of screen back up buffer
@@ -490,14 +499,21 @@ SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rec
 int i = 0;
 int j = 0;
 SDL_LockSurface( rectangleTest );
-for(i = 0; i < 40; i++){
+Uint32 testcol = getpixel(rectangleTest, 0, 0);
+
+/*for(i = 0; i < 40; i++){
 for(j = 0; j < 40; j++){
 putpixel(rectangleTest, i, j, (system_objects->renderer)->alpha_color);
 }
-}
-i=0;
-j=0;
+}*/
+
+//i=0;
+//j=0;
 SDL_UnlockSurface( rectangleTest );
+
+SDL_Log("Check alpha color.\n SystemSettting: %i\nFromDrawing: %i", (system_objects->renderer)->alpha_color, testcol);
+//SDL_Log(" ");
+
 
 //this seems to work for the original blit
 //SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
