@@ -341,46 +341,47 @@ void ResolveSystemEvent(){
     SDL_Event sdl_event;
     float x, y;
 
-    SDL_PollEvent(&sdl_event);
-    //system switch
-//    SDL_Log("Entered system resolver");
-//    SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_event.type,SDL_WINDOWEVENT);
-    switch(sdl_event.type){
+    while( SDL_PollEvent(&sdl_event) ) {
+        //system switch
+    //    SDL_Log("Entered system resolver");
+    //    SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_event.type,SDL_WINDOWEVENT);
+        switch(sdl_event.type){
 
-        case SDL_QUIT:
-            //this definitely needs some handling shit
-            break;
+            case SDL_QUIT:
+                //this definitely needs some handling shit
+                break;
 
-        case SDL_WINDOWEVENT:
-//                SDL_Log("Window Event: %d", sdl_event.window.event);
-            if(sdl_event.window.event == SDL_WINDOWEVENT_HIDDEN ||
-               sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
-                InputPushQueue(CreateEvent(TAND_PAUSE));
-                SDL_Log("window goes to background"); 
-            }
-            if(sdl_event.window.event == SDL_WINDOWEVENT_SHOWN ||
-               sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED){ 
-                InputPushQueue(CreateEvent(TAND_RESUME));
-                SDL_Log("window goes to foreground"); 
-            }
-            break;
+            case SDL_WINDOWEVENT:
+    //                SDL_Log("Window Event: %d", sdl_event.window.event);
+                if(sdl_event.window.event == SDL_WINDOWEVENT_HIDDEN ||
+                   sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
+                    InputPushQueue(CreateEvent(TAND_PAUSE));
+                    SDL_Log("window goes to background"); 
+                }
+                if(sdl_event.window.event == SDL_WINDOWEVENT_SHOWN ||
+                   sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED){ 
+                    InputPushQueue(CreateEvent(TAND_RESUME));
+                    SDL_Log("window goes to foreground"); 
+                }
+                break;
 
-        case SDL_FINGERMOTION:
-        case SDL_FINGERDOWN:
-        case SDL_FINGERUP:
-            touch = SDL_GetTouch( sdl_event.tfinger.touchId );
-            
-            if( touch ) {
-                x = ( (float)sdl_event.tfinger.x ) / touch->xres;
-                y = ( (float)sdl_event.tfinger.y ) / touch->yres;
+            case SDL_FINGERMOTION:
+            case SDL_FINGERDOWN:
+            case SDL_FINGERUP:
+                touch = SDL_GetTouch( sdl_event.tfinger.touchId );
+                
+                if( touch ) {
+                    x = ( (float)sdl_event.tfinger.x ) / touch->xres;
+                    y = ( (float)sdl_event.tfinger.y ) / touch->yres;
 
-                x *= blahder->w;
-                y *= blahder->h;
+                    x *= blahder->w;
+                    y *= blahder->h;
 
-                UpdatePosition( x, y );
-            }
+                    UpdatePosition( x, y );
+                }
 
-            break;
+                break;
+        }
     }
 }
 
