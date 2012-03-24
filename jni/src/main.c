@@ -136,6 +136,9 @@ void SetRenderFunc(int (*RenderFunc)());
   //render utility
 SDL_Surface* LoadImageToSurface(char* imgname);
 
+SDL_Surface* blahder;
+SDL_Surface* blahsprite;
+
 //Model system (plugs into renderer above);
   //Cosmos model function's declares
 void InitCosmos();
@@ -334,27 +337,49 @@ int ResolveEvent(struct EventController* resolver){
 }
 
 void ResolveSystemEvent(){
-    SDL_Event sdl_events;
-    SDL_PollEvent(&sdl_events);
+    SDL_Touch* touch;
+    SDL_Event sdl_event;
+    float x, y;
+
+    SDL_PollEvent(&sdl_event);
     //system switch
 //    SDL_Log("Entered system resolver");
-//    SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_events.type,SDL_WINDOWEVENT);
-    switch(sdl_events.type){
+//    SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_event.type,SDL_WINDOWEVENT);
+    switch(sdl_event.type){
+
         case SDL_QUIT:
             //this definitely needs some handling shit
             break;
+
         case SDL_WINDOWEVENT:
-//                SDL_Log("Window Event: %d", sdl_events.window.event);
-            if(sdl_events.window.event == SDL_WINDOWEVENT_HIDDEN ||
-               sdl_events.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
+//                SDL_Log("Window Event: %d", sdl_event.window.event);
+            if(sdl_event.window.event == SDL_WINDOWEVENT_HIDDEN ||
+               sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
                 InputPushQueue(CreateEvent(TAND_PAUSE));
                 SDL_Log("window goes to background"); 
             }
-            if(sdl_events.window.event == SDL_WINDOWEVENT_SHOWN ||
-               sdl_events.window.event == SDL_WINDOWEVENT_FOCUS_GAINED){ 
+            if(sdl_event.window.event == SDL_WINDOWEVENT_SHOWN ||
+               sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED){ 
                 InputPushQueue(CreateEvent(TAND_RESUME));
                 SDL_Log("window goes to foreground"); 
             }
+            break;
+
+        case SDL_FINGERMOTION:
+        case SDL_FINGERDOWN:
+        case SDL_FINGERUP:
+            touch = SDL_GetTouch( sdl_event.tfinger.touchId );
+            
+            if( touch ) {
+                x = ( (float)sdl_event.tfinger.x ) / touch->xres;
+                y = ( (float)sdl_event.tfinger.y ) / touch->yres;
+
+                x *= blahder->w;
+                y *= blahder->h;
+
+                UpdatePosition( x, y );
+            }
+
             break;
     }
 }
@@ -481,21 +506,21 @@ system_configs.height = 480;
 }
 
 
-SDL_Surface* blahder;
-SDL_Surface* blahsprite;
-
 //flush to screen here per frame 
 int myRenderFunc(){
+    /*
 	static int tx = 20;
 	static int ty = 20;
 	UpdatePosition(tx,ty);
-	FlushToScreen(blahder); //think of blahder as the master layer
 	tx += 1;
 	ty += 1;
 
 	if(tx >= 50) tx = 20;
 
 	if(ty >= 50) ty = 20;
+    */
+
+	FlushToScreen(blahder); //think of blahder as the master layer
 
 	return 0;
 }
@@ -503,15 +528,15 @@ int myRenderFunc(){
 //this will statically update the screen position of the hardcoded
 //rectangle
 void UpdatePosition(int x, int y){
-SDL_FillRect(blahder, NULL, 0);
-SDL_Rect dstrectum;
-dstrectum.x = x;
-dstrectum.y = y;
-dstrectum.w = 40;
-dstrectum.h = 40;
+    SDL_FillRect(blahder, NULL, 0);
+    SDL_Rect dstrectum;
+    dstrectum.x = x;
+    dstrectum.y = y;
+    dstrectum.w = 40;
+    dstrectum.h = 40;
 
 
-SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
+    SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
 }
 
 void renderTest(){
