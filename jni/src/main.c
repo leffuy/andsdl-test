@@ -150,6 +150,7 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 
 //ewww I hate this function not part of the platform just a test
 void renderTest();
+void UpdatePosition(int x, int y);
 
 //utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y){
@@ -481,11 +482,36 @@ system_configs.height = 480;
 
 
 SDL_Surface* blahder;
+SDL_Surface* blahsprite;
 
 //flush to screen here per frame 
 int myRenderFunc(){
-FlushToScreen(blahder); //think of blahder as the master layer
-return 0;
+	static int tx = 20;
+	static int ty = 20;
+	UpdatePosition(tx,ty);
+	FlushToScreen(blahder); //think of blahder as the master layer
+	tx += 1;
+	ty += 1;
+
+	if(tx >= 50) tx = 20;
+
+	if(ty >= 50) ty = 20;
+
+	return 0;
+}
+
+//this will statically update the screen position of the hardcoded
+//rectangle
+void UpdatePosition(int x, int y){
+SDL_FillRect(blahder, NULL, 0);
+SDL_Rect dstrectum;
+dstrectum.x = x;
+dstrectum.y = y;
+dstrectum.w = 40;
+dstrectum.h = 40;
+
+
+SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
 }
 
 void renderTest(){
@@ -526,9 +552,10 @@ SDL_Log("Check alpha color.\n SystemSettting: %i\nFromDrawing: %i", (system_obje
 //SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
 
-SDL_FreeSurface(rectangleTest);
+//SDL_FreeSurface(rectangleTest);
 
 blahder = testSurface;
+blahsprite = rectangleTest;
 //SDL_SetColorKey(blahder, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 } // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure
