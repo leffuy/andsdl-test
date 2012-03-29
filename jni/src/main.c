@@ -39,6 +39,7 @@ struct ConfigSys{
 }; //This goes into a configuration function
 
 struct SysObjs{
+    Uint32 framecount, aframetime;
     struct Renderer* renderer;
 
 }; //This comes out via a pointer with all the system objects
@@ -263,6 +264,8 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 255,162,249);
     (*(*tmpsysobj).renderer).alpha_color = alpha;
 //    SDL_Log("Alpha color raw: %d", (*(*tmpsysobj).renderer).alpha_color);
+    (*tmpsysobj).aframetime = 0;
+    (*tmpsysobj).framecount = 0;
 
     return tmpsysobj;
 }
@@ -425,17 +428,21 @@ void SetRenderFunc(int (*RenderFunc)()){
 }
 
 void StartSystem(){
+    (*system_objects).framecount = 0;
     if(!(*system_objects).renderer)
         return; //kind of like throwing an exception?
 
     
 //Root loop things can be scheduled around this
     for(;;){
+        //start of count
+        Uint32 startFrame = SDL_GetTicks();
         ResolveSystemEvent();
         struct EventController* tmpEvent = InputPopQueue();
         //events are read in the main thread, and pushed from all threads
 
         //resolve event is setup to launch it's own threads
+/*
 	if(ResolveEvent(tmpEvent) == 1){ //this will plug into the pause menu
         //omg another one                   one day
             SDL_MinimizeWindow((*(*system_objects).renderer).window);
@@ -449,7 +456,7 @@ void StartSystem(){
                     break;
                 }
             }
-        }
+        } */
         //This should be in the most root thread along with IO
 
 //ALl objects will have their own render function
@@ -457,6 +464,12 @@ void StartSystem(){
             (*(*system_objects).renderer).RenderFunc();
 
         RenderScreen();
+        Uint32 endFrame = SDL_GetTicks();
+
+        (*system_objects).aframetime = 1000 / (endFrame - startFrame);
+
+        (*system_objects).framecount += 1;
+        //end here this time should give you the amount of time it takes to render to the screen 
     }
 }
 
