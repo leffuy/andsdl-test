@@ -21,7 +21,7 @@
 //#include "hashmap.h"
 #include "SDL.h"
 #include "SDL_image.h"
-
+#include "SDL_ttf.h"
 //defines
 
 
@@ -131,11 +131,13 @@ void ResolveSystemEvent();
 struct EventController* InputPopQueue();
 void InputPushQueue(struct EventController* pushed);
   //render functions
+void FlushTextToScreen(SDL_Surface* textLayer, int x, int y);
 void FlushToScreen(SDL_Surface* layer);
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
   //render utility
 SDL_Surface* LoadImageToSurface(char* imgname);
+SDL_Surface* LoadTextToSurface(char* fontname, char* text);
 
 SDL_Surface* blahder;
 SDL_Surface* blahsprite;
@@ -278,6 +280,26 @@ SDL_Surface* LoadImageToSurface(char* imgname){
     SDL_Surface *image = IMG_Load_RW(file, 1);
     return image;
 }
+
+SDL_Surface* LoadTextToSurface(char* fontname, char* text){
+    SDL_Color font_clr = {255 , 255 , 255 , 0 };
+    SDL_RWops* font_raw = SDL_RWFromFile(fontname, "rb");
+    TTF_Font* font = TTF_OpenFontRW(font_raw, 1, 12);
+    SDL_Surface* surf_text = TTF_RenderText_Solid(font, (const char*)surf_text, font_clr);
+    return surf_text;
+}
+
+void FlushTextToScreen(SDL_Surface* textLayer, int x, int y){
+    SDL_Rect dstrectum;
+
+    dstrectum.x = x;
+    dstrectum.y = y;
+    dstrectum.w = textLayer->w;
+    dstrectum.h = textLayer->h;
+
+    SDL_BlitSurface(textLayer, NULL, (*(*system_objects).renderer).screen, &dstrectum);
+}
+
 
 void FlushToScreen(SDL_Surface* layer){
     if(!layer) return; //check layer
@@ -534,7 +556,9 @@ int myRenderFunc(){
 	if(ty >= 50) ty = 20;
     */
 
+        SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
 	FlushToScreen(blahder); //think of blahder as the master layer
+	FlushTextToScreen(tmpText, 0, 0);
 
 	return 0;
 }
