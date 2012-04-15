@@ -285,18 +285,21 @@ SDL_Surface* LoadTextToSurface(char* fontname, char* text){
     SDL_Color font_clr = {255 , 255 , 255 , 0 };
     SDL_RWops* font_raw = SDL_RWFromFile(fontname, "rb");
     TTF_Font* font = TTF_OpenFontRW(font_raw, 1, 12);
-    SDL_Surface* surf_text = TTF_RenderText_Solid(font, (const char*)surf_text, font_clr);
+    SDL_Surface* surf_text = TTF_RenderText_Solid(font, (const char*)text, font_clr);
     return surf_text;
 }
 
 void FlushTextToScreen(SDL_Surface* textLayer, int x, int y){
     SDL_Rect dstrectum;
-
-    dstrectum.x = x;
-    dstrectum.y = y;
-    dstrectum.w = textLayer->w;
-    dstrectum.h = textLayer->h;
-
+    if(textLayer->w == NULL || textLayer->h == NULL){
+        dstrectum.x = x;
+        dstrectum.y = y;
+        dstrectum.w = textLayer->w;
+        dstrectum.h = textLayer->h;
+    }
+    else{
+        return;
+    }
     SDL_BlitSurface(textLayer, NULL, (*(*system_objects).renderer).screen, &dstrectum);
 }
 
@@ -557,6 +560,7 @@ int myRenderFunc(){
     */
 
         SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
+	SDL_Log("Is there a number here or a segfault: %d", tmpText->h);
 	FlushToScreen(blahder); //think of blahder as the master layer
 	FlushTextToScreen(tmpText, 0, 0);
 
