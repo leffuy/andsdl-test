@@ -243,6 +243,10 @@ void DelCosmos(int key){
 //Init's screen and window stuff
 struct SysObjs* InitConfig(struct ConfigSys *conf){
     if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return NULL;
+    if (TTF_Init()){
+        SDL_Log("Error with TTF_Init(): %s", SDL_GetError());
+        return NULL;
+    }
     SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     //do something with these 
     struct SysObjs* tmpsysobj = (struct SysObjs*)malloc(sizeof(struct SysObjs));
