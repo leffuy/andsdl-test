@@ -13,142 +13,13 @@
 *
 */
 
-//includes
-#include <malloc.h> //my favorite of all memory allocators, never lets me down
-#include <stdio.h> //for NULL. I mean seriously...
+#include "thysio.h"
 
-#include "uthash.h"
-//#include "hashmap.h"
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_ttf.h"
-//defines
-
-
-//platform structures declarations
-struct Model;
-struct ModelIndex;
-struct Cosmos;
-struct Sprite;
-
-//expandable configurator
-struct ConfigSys{
-    char* windowName; //Name the window mang
-    int width,height; //I can do this right?
-    
-}; //This goes into a configuration function
-
-struct SysObjs{
-    Uint32 framecount, aframetime;
-    struct Renderer* renderer;
-
-}; //This comes out via a pointer with all the system objects
-
-//Small struct to hold video objects
-struct Renderer{
-    int width, height;
-    SDL_Window* window;
-    SDL_Surface* back_buff;
-    SDL_Surface* screen;
-    Uint32 alpha_color;
-    int (*RenderFunc)(); //need to deprecate this
-};
-
-//A render helper to allow for sprites
-struct Sprite{
-    int frames;
-    int currentframe;
-    int width, height;
-    int screenX, screenY;
-    SDL_Surface* frame_strip;
-    SDL_Surface* currentFrame;
-};
-
-//Event-Controller interface
-struct EventController{
-    unsigned int event_code;
-    unsigned char resolved; //this needs to be a bit...
-    int (*Controller)(); //it's like a reverse constructor, forced no params
-    struct EventController* next;
-};
-
-enum EventCodes {
-    TAND_INIT,
-    TAND_PAUSE,
-    TAND_RESUME,
-    TAND_QUIT
-}; //Basic event codes for case in event creation
-
-
-//Here goes the model stuff
-//Models based on a 2-dimensional Cosmos. For the start
-//the screenX and screenY determine the camera placement
-//in the huge "open" world. The models correlate to everything in the world
-//including basic terrain (this will likely be the first thing to be expanded)
-struct Cosmos{
-    int screenX, screenY;
-    //models go here
-    struct Model* model_hash;
-    struct Renderer* r_ptr; //Cosmos gets direct access to the renderer assets
-}; //Serves as a model database
-//A first optimization will revolve around partitioning the very large space in
-//which the cosmos encompasses and organizing it easily for rendering and 
-//computation
-
-//Model Index unnecessary; wasted lines like this comment
-struct Model{
-    int id; //serves as pk
-    char* name;
-    struct Sprite* appearance; //appearance map
-    int worldX, worldY; //from the world
-    //here is where the chipmunk actor goes
-    UT_hash_handle hh;         /* makes this structure hashable */
-};
-//Essentially an actor with a sprite attached
-
-//here goes render stuff
-
-//System-wide Variable Structs; aka Singletons
-//Contains Renderer and Input mechanisms, etc.
 struct ConfigSys system_configs; //maybe these will be pointers one day...
 struct SysObjs* system_objects;
 struct EventController* headController;
 struct EventController* tailController;
 struct Cosmos kosmos;
-
-//platform function's declares
-  //system functions 
-struct SysObjs* InitConfig(struct ConfigSys *conf);
-void InitSystem();
-void StartSystem();
-void StopSystem();
-void ResumeSystem();
-void QuitSystem();
-  //events and input section
-struct EventController* CreateEvent(enum EventCodes eventcode);
-int ResolveEvent(struct EventController* resolver);
-void ResolveSystemEvent();
-struct EventController* InputPopQueue();
-void InputPushQueue(struct EventController* pushed);
-  //render functions
-void FlushTextToScreen(SDL_Surface* textLayer, int x, int y);
-void FlushToScreen(SDL_Surface* layer);
-void RenderScreen();
-void SetRenderFunc(int (*RenderFunc)());
-  //render utility
-SDL_Surface* LoadImageToSurface(char* imgname);
-SDL_Surface* LoadTextToSurface(char* fontname, char* text);
-
-SDL_Surface* blahder;
-SDL_Surface* blahsprite;
-
-//Model system (plugs into renderer above);
-  //Cosmos model function's declares
-void InitCosmos();
-void AddCosmos(struct Model *m);
-struct Model* GetCosmos(int key);
-void DelCosmos(int key);
-
 
 //Utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y);
@@ -278,60 +149,6 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
 
 //model stuff functions
 
-//render stuff functions
-SDL_Surface* LoadImageToSurface(char* imgname){
-    SDL_RWops *file = SDL_RWFromFile(imgname, "rb");
-    SDL_Surface *image = IMG_Load_RW(file, 1);
-    return image;
-}
-
-SDL_Surface* LoadTextToSurface(char* fontname, char* text){
-    SDL_Color font_clr = {255 , 255 , 255 , 0 };
-    SDL_RWops* font_raw = SDL_RWFromFile(fontname, "rb");
-    TTF_Font* font = TTF_OpenFontRW(font_raw, 1, 12);
-    SDL_Surface* surf_text = TTF_RenderText_Solid(font, (const char*)text, font_clr);
-    return surf_text;
-}
-
-void FlushTextToScreen(SDL_Surface* textLayer, int x, int y){
-    SDL_Rect dstrectum;
-    if(textLayer->w == NULL || textLayer->h == NULL){
-        dstrectum.x = x;
-        dstrectum.y = y;
-        dstrectum.w = textLayer->w;
-        dstrectum.h = textLayer->h;
-    }
-    else{
-        return;
-    }
-    SDL_BlitSurface(textLayer, NULL, (*(*system_objects).renderer).screen, &dstrectum);
-}
-
-
-void FlushToScreen(SDL_Surface* layer){
-    if(!layer) return; //check layer
-    //Check for size sameness
-    if((*(*(*system_objects).renderer).screen).w != (*layer).w || (*(*(*system_objects).renderer).screen).h != (*layer).h) return; //I'm a real big fan of returning early if error encountered
-    //assume alpha channel for 250,162,255
-    //Should have alpha channel now for transparency in layers
-//    SDL_SetSurfaceAlphaMod(layer, 0);
-    SDL_SetColorKey(layer, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
-//    SDL_Log("Alpha color raw: %d", (*(*system_objects).renderer).alpha_color);
-
-    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
-    //I like this line here; instead of screen back up buffer
-    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).back_buff, NULL);
-    //is a mirror of the screen; this may be unnecessary in future
-}
-
-void RenderScreen(){
-    SDL_UpdateWindowSurface((*(*system_objects).renderer).window);
-//clear screen buffer after successful update
-    SDL_Log("Render error %s", SDL_GetError());
-    SDL_FillRect((*(*system_objects).renderer).screen, NULL, 0);
-    SDL_FillRect((*(*system_objects).renderer).back_buff, NULL, 0);
-    //ready for new frame!
-}
 
 //these guys handle event creation/resolution
 
@@ -339,109 +156,6 @@ void RenderScreen(){
 //Please fucking change this if you feel that it needs to be, don't even 
 //hesitate. I don't like over using if statements and a switch() is just that
 
-struct EventController* CreateEvent(enum EventCodes eventcode){
-    struct EventController* eventControl = (struct EventController*)malloc(sizeof(struct EventController));
-    (*eventControl).next = NULL; 
-    (*eventControl).event_code = eventcode;
-    return eventControl;
-}
-
-//Another note to patrick:
-//This will set up the input 
-
-int ResolveEvent(struct EventController* resolver){
-    if(!resolver) return 0;
-    if((*resolver).event_code == TAND_PAUSE){
-        free(resolver);
-        return 1;
-    }
-    if((*resolver).event_code == TAND_RESUME){
-        free(resolver);
-        return 2;
-    }
-    if(!(*resolver).Controller){
-        free(resolver);
-        return 0; //I'm a big fan of returning early during checks
-    }
-    (*resolver).Controller(); // Simple enough
-    free(resolver);
-    return 0;
-}
-
-void ResolveSystemEvent(){
-    SDL_Touch* touch;
-    SDL_Event sdl_event;
-    float x, y;
-
-    while( SDL_PollEvent(&sdl_event) ) {
-        //system switch
-    //    SDL_Log("Entered system resolver");
-    //    SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_event.type,SDL_WINDOWEVENT);
-        switch(sdl_event.type){
-
-            case SDL_QUIT:
-                //this definitely needs some handling shit
-                break;
-
-            case SDL_WINDOWEVENT:
-    //                SDL_Log("Window Event: %d", sdl_event.window.event);
-                if(sdl_event.window.event == SDL_WINDOWEVENT_HIDDEN ||
-                   sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_LOST){
-                    InputPushQueue(CreateEvent(TAND_PAUSE));
-                    SDL_Log("window goes to background"); 
-                }
-                if(sdl_event.window.event == SDL_WINDOWEVENT_SHOWN ||
-                   sdl_event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED){ 
-                    InputPushQueue(CreateEvent(TAND_RESUME));
-                    SDL_Log("window goes to foreground"); 
-                }
-                break;
-
-            case SDL_FINGERMOTION:
-            case SDL_FINGERDOWN:
-            case SDL_FINGERUP:
-                touch = SDL_GetTouch( sdl_event.tfinger.touchId );
-                
-                if( touch ) {
-                    x = ( (float)sdl_event.tfinger.x ) / touch->xres;
-                    y = ( (float)sdl_event.tfinger.y ) / touch->yres;
-
-                    x *= blahder->w;
-                    y *= blahder->h;
-
-                    UpdatePosition( x, y );
-                }
-
-                break;
-        }
-    }
-}
-
-//these guys manage the event queue
-struct EventController* InputPopQueue(){
-    if(!headController)
-        return NULL;
-
-    struct EventController* controlman =  headController;
-
-    if((*headController).next){
-       headController = (*headController).next;
-    }
-    else{
-       headController = NULL;
-    }
-    return controlman;
-}
-
-void InputPushQueue(struct EventController* pushed){
-    if(!headController){
-        headController = pushed;
-        tailController = pushed;
-        return;
-    }
-    (*tailController).next = pushed;
-    tailController = pushed;
-}
 
 //I have a feeling at some point this will put in an interface 
 //with a create_scheme
@@ -450,10 +164,6 @@ void InputPushQueue(struct EventController* pushed){
 void InitSystem(){
     system_objects = InitConfig(&system_configs); //this is simple for now
     //setup system event queue here...
-}
-
-void SetRenderFunc(int (*RenderFunc)()){
-    (*(*system_objects).renderer).RenderFunc = RenderFunc;
 }
 
 void StartSystem(){
@@ -563,10 +273,10 @@ int myRenderFunc(){
 	if(ty >= 50) ty = 20;
     */
 
-        SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
-	SDL_Log("Is there a number here or a segfault: %d", tmpText->h);
+    //    SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
+	//SDL_Log("Is there a number here or a segfault: %d", tmpText->h);
 	FlushToScreen(blahder); //think of blahder as the master layer
-	FlushTextToScreen(tmpText, 0, 0);
+	//FlushTextToScreen(tmpText, 0, 0);
 
 	return 0;
 }
