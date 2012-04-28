@@ -24,7 +24,7 @@ SDL_Surface* LoadTextToSurface(char* fontname, char* text){
 
 void FlushTextToScreen(SDL_Surface* textLayer, int x, int y){
     SDL_Rect dstrectum;
-    if(textLayer->w == NULL || textLayer->h == NULL){
+    if(textLayer != NULL){
         dstrectum.x = x;
         dstrectum.y = y;
         dstrectum.w = textLayer->w;
@@ -36,7 +36,7 @@ void FlushTextToScreen(SDL_Surface* textLayer, int x, int y){
     SDL_BlitSurface(textLayer, NULL, (*(*system_objects).renderer).screen, &dstrectum);
 }
 
-
+//TODO Should probably rename this to FlushLayerToScreen to make it more descriptive 
 void FlushToScreen(SDL_Surface* layer){
     if(!layer) return; //check layer
     //Check for size sameness

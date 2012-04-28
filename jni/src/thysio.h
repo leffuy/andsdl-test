@@ -119,9 +119,6 @@ void SetRenderFunc(int (*RenderFunc)());
 SDL_Surface* LoadImageToSurface(char* imgname);
 SDL_Surface* LoadTextToSurface(char* fontname, char* text);
 
-SDL_Surface* blahder;
-SDL_Surface* blahsprite;
-
 //Model system (plugs into renderer above);
   //Cosmos model function's declares
 void InitCosmos();

@@ -28,6 +28,8 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 //ewww I hate this function not part of the platform just a test
 void renderTest();
 void UpdatePosition(int x, int y);
+SDL_Surface* blahder;
+SDL_Surface* blahsprite;
 
 //utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y){
@@ -283,17 +285,6 @@ int myRenderFunc(){
 
 //this will statically update the screen position of the hardcoded
 //rectangle
-void UpdatePosition(int x, int y){
-    SDL_FillRect(blahder, NULL, 0);
-    SDL_Rect dstrectum;
-    dstrectum.x = x;
-    dstrectum.y = y;
-    dstrectum.w = 40;
-    dstrectum.h = 40;
-
-
-    SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
-}
 
 void renderTest(){
 SDL_Rect dstrectum;

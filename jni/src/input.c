@@ -3,11 +3,26 @@
 extern struct EventController* headController;
 extern struct EventController* tailController;
 
+extern SDL_Surface* blahder;
+extern SDL_Surface* blahsprite;
+
 struct EventController* CreateEvent(enum EventCodes eventcode){
     struct EventController* eventControl = (struct EventController*)malloc(sizeof(struct EventController));
     (*eventControl).next = NULL; 
     (*eventControl).event_code = eventcode;
     return eventControl;
+}
+
+void UpdatePosition(int x, int y){
+    SDL_FillRect(blahder, NULL, 0);
+    SDL_Rect dstrectum;
+    dstrectum.x = x;
+    dstrectum.y = y;
+    dstrectum.w = 40;
+    dstrectum.h = 40;
+
+
+    SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
 }
 
 //Another note to patrick:
