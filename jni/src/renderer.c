@@ -49,15 +49,15 @@ void FlushToScreen(SDL_Surface* layer){
 
     SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).screen, NULL);
     //I like this line here; instead of screen back up buffer
-    SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).back_buff, NULL);
+    //SDL_BlitSurface(layer, NULL, (*(*system_objects).renderer).back_buff, NULL);
     //is a mirror of the screen; this may be unnecessary in future
 }
 
 void RenderScreen(){
     SDL_UpdateWindowSurface((*(*system_objects).renderer).window);
 //clear screen buffer after successful update
-    SDL_Log("Render error %s", SDL_GetError());
+    //SDL_Log("Render error %s", SDL_GetError());
     SDL_FillRect((*(*system_objects).renderer).screen, NULL, 0);
-    SDL_FillRect((*(*system_objects).renderer).back_buff, NULL, 0);
+    //SDL_FillRect((*(*system_objects).renderer).back_buff, NULL, 0);
     //ready for new frame!
 }

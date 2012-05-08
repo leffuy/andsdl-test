@@ -31,6 +31,10 @@ void UpdatePosition(int x, int y);
 SDL_Surface* blahder;
 SDL_Surface* blahsprite;
 
+//We'll just make this global for now.
+SDL_Rect dstrectum;
+
+
 //utility functions
 Uint32 getpixel(SDL_Surface *surface, int x, int y){
     int bpp = surface->format->BytesPerPixel;
@@ -131,7 +135,7 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     (*(*tmpsysobj).renderer).window = window;
     (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
     SDL_Surface* sptr = (*(*tmpsysobj).renderer).screen;
-    (*(*tmpsysobj).renderer).back_buff = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
+    //(*(*tmpsysobj).renderer).back_buff = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
     //At some point this thing below will be configurable
     //For now, just use the fucking value: 255,162,249
     //will send out value from jpg created using gimp
@@ -178,8 +182,8 @@ void StartSystem(){
     for(;;){
         //start of count
         Uint32 startFrame = SDL_GetTicks();
-        ResolveSystemEvent();
-        struct EventController* tmpEvent = InputPopQueue();
+        //ResolveSystemEvent();
+        //struct EventController* tmpEvent = InputPopQueue();
         //events are read in the main thread, and pushed from all threads
 
         //resolve event is setup to launch it's own threads
@@ -199,6 +203,11 @@ void StartSystem(){
             }
         } */
         //This should be in the most root thread along with IO
+
+       // Get the current x and y. 
+        SDL_FillRect(blahder, NULL, 0);
+
+        SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
 
 //ALl objects will have their own render function
         if((*(*system_objects).renderer).RenderFunc)
@@ -287,48 +296,46 @@ int myRenderFunc(){
 //rectangle
 
 void renderTest(){
-SDL_Rect dstrectum;
-dstrectum.x = 20;
-dstrectum.y = 20;
-dstrectum.w = 40;
-dstrectum.h = 40;
+    dstrectum.x = 20;
+    dstrectum.y = 20;
+    dstrectum.w = 40;
+    dstrectum.h = 40;
 
-SDL_Surface* sptr = (*(*system_objects).renderer).screen;
-
-
-SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
-
-SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
-
-//going to lock the surface and make the entire rectangle the alpha color
-int i = 0;
-int j = 0;
-SDL_LockSurface( rectangleTest );
-Uint32 testcol = getpixel(rectangleTest, 0, 0);
-
-/*for(i = 0; i < 40; i++){
-for(j = 0; j < 40; j++){
-putpixel(rectangleTest, i, j, (system_objects->renderer)->alpha_color);
-}
-}*/
-
-//i=0;
-//j=0;
-SDL_UnlockSurface( rectangleTest );
-
-SDL_Log("Check alpha color.\n SystemSettting: %i\nFromDrawing: %i", (system_objects->renderer)->alpha_color, testcol);
-//SDL_Log(" ");
+    SDL_Surface* sptr = (*(*system_objects).renderer).screen;
 
 
-//this seems to work for the original blit
-//SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
-SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
+    SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
 
-//SDL_FreeSurface(rectangleTest);
+    SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
 
-blahder = testSurface;
-blahsprite = rectangleTest;
-//SDL_SetColorKey(blahder, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
+    //going to lock the surface and make the entire rectangle the alpha color
+    int i = 0;
+    int j = 0;
+    SDL_LockSurface( rectangleTest );
+    Uint32 testcol = getpixel(rectangleTest, 0, 0);
+
+    /*for(i = 0; i < 40; i++){
+    for(j = 0; j < 40; j++){
+    putpixel(rectangleTest, i, j, (system_objects->renderer)->alpha_color);
+    }
+    }*/
+
+    //i=0;
+    //j=0;
+    SDL_UnlockSurface( rectangleTest );
+
+    //SDL_Log("Check alpha color.\n SystemSettting: %i\nFromDrawing: %i", (system_objects->renderer)->alpha_color, testcol);
+
+
+    //this seems to work for the original blit
+    //SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
+    SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
+
+    //SDL_FreeSurface(rectangleTest);
+
+    blahder = testSurface;
+    blahsprite = rectangleTest;
+    //SDL_SetColorKey(blahder, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 } // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure
 
@@ -337,6 +344,7 @@ int main(int argc, char* argv[])
 {
     setupTest();
     InitSystem();
+    InitializeSystemEventHandler();
 //Here we should load game related stuff;
 //This is what I imagine:
     //LoadCosmos("userDataFile"); //loads the world file

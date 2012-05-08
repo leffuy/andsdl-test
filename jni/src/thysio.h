@@ -105,6 +105,7 @@ void StopSystem();
 void ResumeSystem();
 void QuitSystem();
   //events and input section
+int InitializeSystemEventHandler();
 struct EventController* CreateEvent(enum EventCodes eventcode);
 int ResolveEvent(struct EventController* resolver);
 void ResolveSystemEvent();
