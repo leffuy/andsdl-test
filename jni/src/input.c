@@ -99,6 +99,14 @@ void ResolveSystemEvent( SDL_Event *sdl_event ) {
         case SDL_FINGERDOWN:
         case SDL_FINGERUP:
             touch = SDL_GetTouch( sdl_event->tfinger.touchId );
+            /*
+            SDL_Log( "window id: %i", sdl_event->tfinger.windowID );
+            SDL_Log( "\ttouch id: %i", sdl_event->tfinger.touchId );
+            SDL_Log( "\tfinger id: %lld", sdl_event->tfinger.fingerId );    // This was an inportant find that will be useful later.
+            SDL_Log( "\t(x,y): (%i,%i)", sdl_event->tfinger.x, sdl_event->tfinger.y );
+            SDL_Log( "\t(dx,dy): (%i,%i)", sdl_event->tfinger.dx, sdl_event->tfinger.dy );
+            SDL_Log( "\tpressure: %i", sdl_event->tfinger.pressure );
+            */
             
             if( touch ) {
                 x = ( (float)sdl_event->tfinger.x ) / touch->xres;
