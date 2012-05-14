@@ -50,6 +50,7 @@ public class SDLActivity extends Activity {
         System.loadLibrary("SDL_image");
         //System.loadLibrary("SDL_mixer");
         System.loadLibrary("SDL2_ttf");
+        System.loadLibrary("chipmunk");
         System.loadLibrary("main");
     }
 

@@ -14,6 +14,7 @@
 */
 
 #include "thysio.h"
+#include "chipmunk.h"
 
 struct ConfigSys system_configs; //maybe these will be pointers one day...
 struct SysObjs* system_objects;
