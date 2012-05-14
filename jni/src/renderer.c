@@ -53,6 +53,20 @@ void FlushToScreen(SDL_Surface* layer){
     //is a mirror of the screen; this may be unnecessary in future
 }
 
+void FlushToHWScreen(SDL_Texture* layer){
+    if(!layer) return; //check layer
+//    if((*(*(*system_objects).renderer).screen).w != (*layer).w || (*(*(*system_objects).renderer).screen).h != (*layer).h) return; //I'm a real big fan of returning early if error encountered
+
+
+    SDL_RenderCopy((*(*system_objects).renderer).sdl_renderer, layer, NULL, NULL);
+}
+
+void RenderHWScreen(){
+    SDL_RenderPresent((*(*system_objects).renderer).sdl_renderer);
+    SDL_RenderClear((*(*system_objects).renderer).sdl_renderer);
+    //clear screen
+}
+
 void RenderScreen(){
     SDL_UpdateWindowSurface((*(*system_objects).renderer).window);
 //clear screen buffer after successful update

@@ -5,6 +5,7 @@
 #include "uthash.h"
 //#include "hashmap.h"
 #include "SDL.h"
+#include "SDL_render.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 
@@ -19,7 +20,7 @@ typedef enum {
     false,
     true
 } __attribute__ ((packed)) boolean;
-
+//Note For Packie: what does the above tag do? Comment via github
 
 //platform structures declarations
 struct Model;
@@ -44,10 +45,12 @@ struct SysObjs{
 struct Renderer{
     int width, height;
     SDL_Window* window;
+    SDL_Renderer* sdl_renderer;
     SDL_Surface* back_buff;
     SDL_Surface* screen;
     Uint32 alpha_color;
     int (*RenderFunc)(); //need to deprecate this
+    
 };
 
 //A render helper to allow for sprites

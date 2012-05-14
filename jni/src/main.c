@@ -28,6 +28,7 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 
 //ewww I hate this function not part of the platform just a test
 void renderTest();
+SDL_Texture* blahdee;
 SDL_Surface* blahder;
 SDL_Surface* blahsprite;
 
@@ -130,10 +131,15 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
         return NULL;
     }
     SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
-    //do something with these 
+    SDL_Renderer* the_renderer = SDL_CreateRenderer(window, -1, 0);
+     
+    SDL_SetRenderDrawColor(the_renderer, 0, 0, 0, 255);
+  //do something with these 
     struct SysObjs* tmpsysobj = (struct SysObjs*)malloc(sizeof(struct SysObjs));
     (*tmpsysobj).renderer = (struct Renderer*)malloc(sizeof(struct Renderer));
-
+    //add sdl renderer to our "renderer" object 
+    (*(*tmpsysobj).renderer).sdl_renderer = the_renderer;
+    //Height and Width of the screen... needs testing
     (*(*tmpsysobj).renderer).width = (*conf).width;
     (*(*tmpsysobj).renderer).height = (*conf).height;
 
@@ -212,6 +218,8 @@ void StartSystem(){
         //This should be in the most root thread along with IO
 
         // Get the current x and y of the main input
+
+	//Put this in it's own function
         if( inputEvent[ 0 ] ) {
             dstrectum.x = touch_inputs[0].x;
             dstrectum.y = touch_inputs[0].y;
@@ -220,9 +228,9 @@ void StartSystem(){
         }
 
 
-        SDL_FillRect(blahder, NULL, 0);
+//        SDL_FillRect(blahder, NULL, 0);
 
-        SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
+ //       SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
 
 //ALl objects will have their own render function
         if((*(*system_objects).renderer).RenderFunc)
@@ -289,7 +297,8 @@ system_configs.height = 480;
 int myRenderFunc(){
     //    SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
 	//SDL_Log("Is there a number here or a segfault: %d", tmpText->h);
-	FlushToScreen(blahder); //think of blahder as the master layer
+//	FlushToScreen(blahder); //think of blahder as the master layer
+	FlushToHWScreen(blahdee);
 	//FlushTextToScreen(tmpText, 0, 0);
 
 	return 0;
@@ -310,6 +319,8 @@ void renderTest(){
     SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
 
     SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
+
+    SDL_Texture* testTexture = SDL_CreateTextureFromSurface((*(*system_objects).renderer).sdl_renderer, testSurface);
 
     //going to lock the surface and make the entire rectangle the alpha color
     int i = 0;
@@ -338,6 +349,7 @@ void renderTest(){
 
     blahder = testSurface;
     blahsprite = rectangleTest;
+    blahdee = testTexture;
     //SDL_SetColorKey(blahder, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 } // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure
