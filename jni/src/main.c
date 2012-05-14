@@ -27,12 +27,16 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 
 //ewww I hate this function not part of the platform just a test
 void renderTest();
-void UpdatePosition(int x, int y);
 SDL_Surface* blahder;
 SDL_Surface* blahsprite;
 
 //We'll just make this global for now.
 SDL_Rect dstrectum;
+
+// external input arrays
+extern boolean inputEvent[];
+
+extern struct TouchInput touch_inputs[];
 
 
 //utility functions
@@ -173,6 +177,8 @@ void InitSystem(){
 }
 
 void StartSystem(){
+    int i;
+
     (*system_objects).framecount = 0;
     if(!(*system_objects).renderer)
         return; //kind of like throwing an exception?
@@ -204,7 +210,15 @@ void StartSystem(){
         } */
         //This should be in the most root thread along with IO
 
-       // Get the current x and y. 
+        // Get the current x and y of the main input
+        if( inputEvent[ 0 ] ) {
+            dstrectum.x = touch_inputs[0].x;
+            dstrectum.y = touch_inputs[0].y;
+
+            inputEvent[ 0 ] = false;
+        }
+
+
         SDL_FillRect(blahder, NULL, 0);
 
         SDL_BlitSurface(blahsprite, NULL, blahder, &dstrectum);
@@ -272,18 +286,6 @@ system_configs.height = 480;
 
 //flush to screen here per frame 
 int myRenderFunc(){
-    /*
-	static int tx = 20;
-	static int ty = 20;
-	UpdatePosition(tx,ty);
-	tx += 1;
-	ty += 1;
-
-	if(tx >= 50) tx = 20;
-
-	if(ty >= 50) ty = 20;
-    */
-
     //    SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
 	//SDL_Log("Is there a number here or a segfault: %d", tmpText->h);
 	FlushToScreen(blahder); //think of blahder as the master layer

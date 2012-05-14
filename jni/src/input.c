@@ -9,6 +9,9 @@ extern SDL_Surface* blahder;
 extern SDL_Rect dstrectum;
 
 
+boolean inputEvent[ MAX_TOUCH_INPUTS ];
+
+struct TouchInput touch_inputs[ MAX_TOUCH_INPUTS ];
 
 
 int EventHandler() {
@@ -41,9 +44,19 @@ struct EventController* CreateEvent(enum EventCodes eventcode){
     return eventControl;
 }
 
-void UpdatePosition(int x, int y) {
-    dstrectum.x = x;
-    dstrectum.y = y;
+int UpdatePosition(unsigned int touch_index, POSITION x, POSITION y) {//, float dx, float dy) {
+    if( touch_index >= MAX_TOUCH_INPUTS )
+        return FAIL;
+
+    touch_inputs[ touch_index ].x = x;
+    touch_inputs[ touch_index ].y = y;
+
+    //touch_input->dx = dx;
+    //touch_input->dy = dy;
+
+    inputEvent[ touch_index ] = true;
+
+    return SUCCESS;
 }
 
 //Another note to patrick:
@@ -71,9 +84,9 @@ int ResolveEvent(struct EventController* resolver){
 void ResolveSystemEvent( SDL_Event *sdl_event ) {
     SDL_Touch* touch;
     float x, y;
+    float dx, dy;
+    unsigned int finger_index;
 
-    //system switch
-    //SDL_Log("Entered system resolver");
     //SDL_Log("SDL event resolved: %d undecoded %d=WindowEvent", sdl_event.type,SDL_WINDOWEVENT);
     switch(sdl_event->type){
 
@@ -82,7 +95,7 @@ void ResolveSystemEvent( SDL_Event *sdl_event ) {
             break;
 
         case SDL_WINDOWEVENT:
-//                SDL_Log("Window Event: %d", sdl_event.window.event);
+            //SDL_Log("Window Event: %d", sdl_event.window.event);
             if(sdl_event->window.event == SDL_WINDOWEVENT_HIDDEN ||
                sdl_event->window.event == SDL_WINDOWEVENT_FOCUS_LOST){
                 InputPushQueue(CreateEvent(TAND_PAUSE));
@@ -115,7 +128,9 @@ void ResolveSystemEvent( SDL_Event *sdl_event ) {
                 x *= blahder->w;
                 y *= blahder->h;
 
-                UpdatePosition( x, y );
+                finger_index = sdl_event->tfinger.fingerId;
+
+                UpdatePosition( finger_index, x, y );
             }
 
             break;

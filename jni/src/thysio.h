@@ -7,7 +7,18 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
-//defines
+
+
+#define MAX_TOUCH_INPUTS 2
+
+#define SUCCESS 0
+#define FAIL    1
+
+
+typedef enum {
+    false,
+    true
+} __attribute__ ((packed)) boolean;
 
 
 //platform structures declarations
@@ -55,6 +66,16 @@ struct EventController{
     unsigned char resolved; //this needs to be a bit...
     int (*Controller)(); //it's like a reverse constructor, forced no params
     struct EventController* next;
+};
+
+// This might be floats later. Might as well typedef it.
+typedef int POSITION;
+
+struct TouchInput{
+    POSITION x;
+    POSITION y;
+    float dx;
+    float dy;
 };
 
 enum EventCodes {
@@ -126,3 +147,4 @@ void InitCosmos();
 void AddCosmos(struct Model *m);
 struct Model* GetCosmos(int key);
 void DelCosmos(int key);
+
