@@ -29,6 +29,7 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 //ewww I hate this function not part of the platform just a test
 void renderTest();
 SDL_Texture* blahdee;
+SDL_Texture* blahdah;
 SDL_Surface* blahder;
 SDL_Surface* blahsprite;
 
@@ -132,6 +133,10 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     }
     SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     SDL_Renderer* the_renderer = SDL_CreateRenderer(window, -1, 0);
+    if(the_renderer == NULL){
+        SDL_Log("Error creating renderer: %s", SDL_GetError());
+        return NULL;
+    }
      
     SDL_SetRenderDrawColor(the_renderer, 0, 0, 0, 255);
   //do something with these 
@@ -155,8 +160,9 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
  //   SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
     //Should print SOMETHING before it segfaults, which I'm sure it will
 //    SDL_Log("What kind is this? %d", SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 250,162,255));
-    Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 255,162,249);
-    (*(*tmpsysobj).renderer).alpha_color = alpha;
+//    Uint32 alpha = SDL_MapRGB((*(*(*tmpsysobj).renderer).screen).format, 255,162,249);
+    (*(*tmpsysobj).renderer).alpha_color = 0;
+//alpha;
 //    SDL_Log("Alpha color raw: %d", (*(*tmpsysobj).renderer).alpha_color);
     (*tmpsysobj).aframetime = 0;
     (*tmpsysobj).framecount = 0;
@@ -236,7 +242,8 @@ void StartSystem(){
         if((*(*system_objects).renderer).RenderFunc)
             (*(*system_objects).renderer).RenderFunc();
 
-        RenderScreen();
+        //RenderScreen();
+        RenderHWScreen();
         Uint32 endFrame = SDL_GetTicks();
 
         (*system_objects).aframetime = 1000 / (endFrame - startFrame);
@@ -298,7 +305,7 @@ int myRenderFunc(){
     //    SDL_Surface* tmpText = LoadTextToSurface("courier.ttf", "X and Y");
 	//SDL_Log("Is there a number here or a segfault: %d", tmpText->h);
 //	FlushToScreen(blahder); //think of blahder as the master layer
-	FlushToHWScreen(blahdee);
+	FlushToHWScreen(blahdah, &dstrectum);
 	//FlushTextToScreen(tmpText, 0, 0);
 
 	return 0;
@@ -313,14 +320,14 @@ void renderTest(){
     dstrectum.w = 40;
     dstrectum.h = 40;
 
-    SDL_Surface* sptr = (*(*system_objects).renderer).screen;
+    struct Renderer* sptr = (*system_objects).renderer;
 
 
     SDL_Surface* rectangleTest = LoadImageToSurface("rectangle.jpg");
+    SDL_Texture* rectangleTextureTest = SDL_CreateTextureFromSurface((*(*system_objects).renderer).sdl_renderer, rectangleTest);
+    //SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
+    SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).width, (*sptr).height, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
 
-    SDL_Surface* testSurface = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*rectangleTest).format).BitsPerPixel,(*(*rectangleTest).format).Rmask,(*(*rectangleTest).format).Gmask,(*(*rectangleTest).format).Bmask,0);
-
-    SDL_Texture* testTexture = SDL_CreateTextureFromSurface((*(*system_objects).renderer).sdl_renderer, testSurface);
 
     //going to lock the surface and make the entire rectangle the alpha color
     int i = 0;
@@ -344,12 +351,14 @@ void renderTest(){
     //this seems to work for the original blit
     //SDL_SetColorKey(rectangleTest, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
     SDL_BlitSurface(rectangleTest, NULL, testSurface, &dstrectum);
+    SDL_Texture* testTexture = SDL_CreateTextureFromSurface((*(*system_objects).renderer).sdl_renderer, testSurface);
 
     //SDL_FreeSurface(rectangleTest);
 
     blahder = testSurface;
     blahsprite = rectangleTest;
     blahdee = testTexture;
+    blahdah = rectangleTextureTest; 
     //SDL_SetColorKey(blahder, SDL_TRUE, (*(*system_objects).renderer).alpha_color);
 } // blah I refuse to bloat the code with this mess before it's too early; RENDER FUCKING TEST bleeh
 //Well the above shit works for sure

@@ -138,6 +138,8 @@ void InputPushQueue(struct EventController* pushed);
   //render functions
 void FlushTextToScreen(SDL_Surface* textLayer, int x, int y);
 void FlushToScreen(SDL_Surface* layer);
+void FlushToHWScreen(SDL_Texture* layer, const SDL_Rect* dstrect);
+void RenderHWScreen();
 void RenderScreen();
 void SetRenderFunc(int (*RenderFunc)());
   //render utility
