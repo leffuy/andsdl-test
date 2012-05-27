@@ -150,12 +150,12 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
 
     (*(*tmpsysobj).renderer).window = window;
     (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
-    SDL_Surface* sptr = (*(*tmpsysobj).renderer).screen;
+//    SDL_Surface* sptr = (*(*tmpsysobj).renderer).screen;
     //(*(*tmpsysobj).renderer).back_buff = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
     //At some point this thing below will be configurable
     //For now, just use the fucking value: 255,162,249
     //will send out value from jpg created using gimp
-
+    SDL_Log("Is there a screen width: %d, and height: %d",  (*(*tmpsysobj).renderer).screen->w, (*(*tmpsysobj).renderer).screen->h);
     //Tom theorizes this will work. (by induction)
  //   SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
     //Should print SOMETHING before it segfaults, which I'm sure it will

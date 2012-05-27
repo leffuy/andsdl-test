@@ -4,10 +4,10 @@
 
 extern struct EventController* headController;
 extern struct EventController* tailController;
+extern struct SysObjs* system_objects; //inserted for access to renderer
 
 extern SDL_Surface* blahder;
 extern SDL_Rect dstrectum;
-
 
 boolean inputEvent[ MAX_TOUCH_INPUTS ];
 
@@ -124,9 +124,11 @@ void ResolveSystemEvent( SDL_Event *sdl_event ) {
             if( touch ) {
                 x = ( (float)sdl_event->tfinger.x ) / touch->xres;
                 y = ( (float)sdl_event->tfinger.y ) / touch->yres;
-
-                x *= blahder->w;
-                y *= blahder->h;
+//Change to screen surface's width and height
+                x *= (*(*system_objects).renderer).screen->w;
+                y *= (*(*system_objects).renderer).screen->h;
+/* Deprecated   x *= blahder->w;
+                y *= blahder->h;*/
 
                 finger_index = sdl_event->tfinger.fingerId;
 
