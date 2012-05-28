@@ -16,7 +16,7 @@
 #include "thysio.h"
 #include "chipmunk.h"
 
-struct ConfigSys system_configs; //maybe these will be pointers one day...
+//struct ConfigSys system_configs; //or deprecated
 struct SysObjs* system_objects;
 struct EventController* headController;
 struct EventController* tailController;
@@ -125,13 +125,13 @@ void DelCosmos(int key){
 }
 
 //Init's screen and window stuff
-struct SysObjs* InitConfig(struct ConfigSys *conf){
+struct SysObjs* InitConfig(char* windowName){
     if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return NULL;
     if (TTF_Init()){
         SDL_Log("Error with TTF_Init(): %s", SDL_GetError());
         return NULL;
     }
-    SDL_Window *window = SDL_CreateWindow((*conf).windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (*conf).width, (*conf).height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+    SDL_Window *window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 0, 0, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     SDL_Renderer* the_renderer = SDL_CreateRenderer(window, -1, 0);
     if(the_renderer == NULL){
         SDL_Log("Error creating renderer: %s", SDL_GetError());
@@ -145,17 +145,23 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
     //add sdl renderer to our "renderer" object 
     (*(*tmpsysobj).renderer).sdl_renderer = the_renderer;
     //Height and Width of the screen... needs testing
-    (*(*tmpsysobj).renderer).width = (*conf).width;
-    (*(*tmpsysobj).renderer).height = (*conf).height;
 
     (*(*tmpsysobj).renderer).window = window;
     (*(*tmpsysobj).renderer).screen = SDL_GetWindowSurface(window);
+    int aWidth = -1;
+    int aHeight = -1;
+
+    SDL_GetWindowSize(window, &aWidth, &aHeight);
+    SDL_Log("Your width sir: %d", aWidth);
+    (*(*tmpsysobj).renderer).width = aWidth;
+    (*(*tmpsysobj).renderer).height = aHeight;
+
 //    SDL_Surface* sptr = (*(*tmpsysobj).renderer).screen;
     //(*(*tmpsysobj).renderer).back_buff = SDL_CreateRGBSurface(0, (*sptr).w, (*sptr).h, (*(*sptr).format).BitsPerPixel,(*(*sptr).format).Rmask,(*(*sptr).format).Gmask,(*(*sptr).format).Bmask,(*(*sptr).format).Amask);
     //At some point this thing below will be configurable
     //For now, just use the fucking value: 255,162,249
     //will send out value from jpg created using gimp
-    SDL_Log("Is there a screen width: %d, and height: %d",  (*(*tmpsysobj).renderer).screen->w, (*(*tmpsysobj).renderer).screen->h);
+    //SDL_Log("Is there a screen width: %d, and height: %d",  (*(*tmpsysobj).renderer).screen->w, (*(*tmpsysobj).renderer).screen->h);
     //Tom theorizes this will work. (by induction)
  //   SDL_Log("The address of format: %d", (*(*(*tmpsysobj).renderer).screen).format);
     //Should print SOMETHING before it segfaults, which I'm sure it will
@@ -184,8 +190,8 @@ struct SysObjs* InitConfig(struct ConfigSys *conf){
 //with a create_scheme
 
 //these three guys manage the event loop
-void InitSystem(){
-    system_objects = InitConfig(&system_configs); //this is simple for now
+void InitSystem(char* windowName){
+    system_objects = InitConfig(windowName); //this is simple for now
     //setup system event queue here...
 }
 
@@ -294,9 +300,9 @@ void setupTest(){ //I really like this name
 
 //here in this huge block of code a loader would do something
 //I see evolution this way, hardcode -> macros -> JSON C objs
-system_configs.windowName = "Figurine";
-system_configs.width = 640;
-system_configs.height = 480;
+//system_configs.windowName = "Figurine";
+//system_configs.width = 640;
+//system_configs.height = 480;
 }
 
 
@@ -366,8 +372,8 @@ void renderTest(){
 //entry point for application start
 int main(int argc, char* argv[])
 {
-    setupTest();
-    InitSystem();
+ //   setupTest();
+    InitSystem("figurine");
     InitializeSystemEventHandler();
 //Here we should load game related stuff;
 //This is what I imagine:

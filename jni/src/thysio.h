@@ -28,13 +28,14 @@ struct ModelIndex;
 struct Cosmos;
 struct Sprite;
 
+/* Deprecating this bitch
 //expandable configurator
 struct ConfigSys{
     char* windowName; //Name the window mang
     int width,height; //I can do this right?
     
 }; //This goes into a configuration function
-
+*/
 struct SysObjs{
     Uint32 framecount, aframetime;
     struct Renderer* renderer;
@@ -122,8 +123,8 @@ struct Model{
 
 //platform function's declares
   //system functions 
-struct SysObjs* InitConfig(struct ConfigSys *conf);
-void InitSystem();
+struct SysObjs* InitConfig(char* windowName);
+void InitSystem(char* windowName);
 void StartSystem();
 void StopSystem();
 void ResumeSystem();

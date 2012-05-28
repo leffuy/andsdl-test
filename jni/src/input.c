@@ -125,10 +125,8 @@ void ResolveSystemEvent( SDL_Event *sdl_event ) {
                 x = ( (float)sdl_event->tfinger.x ) / touch->xres;
                 y = ( (float)sdl_event->tfinger.y ) / touch->yres;
 //Change to screen surface's width and height
-                x *= (*(*system_objects).renderer).screen->w;
-                y *= (*(*system_objects).renderer).screen->h;
-/* Deprecated   x *= blahder->w;
-                y *= blahder->h;*/
+                x *= (*(*system_objects).renderer).width;
+                y *= (*(*system_objects).renderer).height;
 
                 finger_index = sdl_event->tfinger.fingerId;
 
